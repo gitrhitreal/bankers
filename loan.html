@@ -137,9 +137,9 @@ async function approveLoan(loanName) {
   }
 
   try {
-    const res = await fetch(webAppUrl, {
+    const response = await fetch(webAppUrl, {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "approveLoan",
         bank: bank,
@@ -148,7 +148,7 @@ async function approveLoan(loanName) {
       })
     });
 
-    const data = await res.json();
+    const data = await response.json();
     console.log("DEBUG approve response:", data);
 
     if (data.success) {
@@ -158,7 +158,7 @@ async function approveLoan(loanName) {
       alert("Error approving loan: " + (data.error || "Unknown error"));
     }
 
-  } catch(err) {
+  } catch (err) {
     console.error("DEBUG approve fetch error:", err);
     alert("Error approving loan (check console)");
   }
@@ -168,3 +168,4 @@ loadLoans();
 </script>
 </body>
 </html>
+
