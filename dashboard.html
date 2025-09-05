@@ -1,59 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
-<style>
-body{font-family:Arial,sans-serif;margin:0;background:#f4f6f9}
-header{background:#4CAF50;color:white;padding:15px;text-align:center}
-.container{padding:20px}
-.card{background:white;padding:20px;margin:15px 0;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
-.options{display:flex;gap:20px;margin-top:20px}
-.option{flex:1;background:#eee;padding:20px;border-radius:12px;text-align:center;font-size:18px;cursor:pointer;transition:.3s}
-.option:hover{background:#ddd}
-.balance{font-size:20px;font-weight:bold;color:#333}
-</style>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #43e97b, #38f9d7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #333;
+    }
+    .container {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 340px;
+      max-width: 90%;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    h2, h3 { margin-bottom: 20px; color: #222; }
+    button {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      color: white;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: transform 0.2s, background 0.3s;
+    }
+    button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #764ba2, #667eea);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-<header>
-<h1>Welcome, <span id="bankName"></span></h1>
-</header>
-<div class="container">
-<div class="card">
-<p class="balance">Current Balance: ₹ <span id="balance">Loading...</span></p>
-</div>
-<div class="card">
-<h2>Choose an option:</h2>
-<div class="options">
-<div class="option" onclick="goTo('loan.html')">Loan</div>
-<div class="option">Equity</div>
-<div class="option">Bond</div>
-</div>
-</div>
-</div>
-<script>
-const proxyUrl="https://workers-playground-winter-shadow-fd3f.rhitwiksingh16.workers.dev";
-const appsScriptUrl="https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec"; // replace with your Apps Script URL
-const bankName=localStorage.getItem("bankName");
-const userId=localStorage.getItem("userId");
-if(!bankName||!userId){alert("You are not logged in!");window.location.href="index.html"}
-document.getElementById("bankName").textContent=bankName;
-function goTo(page){window.location.href=page}
-async function fetchBalance(){
-try{
-const res=await fetch(proxyUrl,{
-method:"GET",
-headers:{"X-Target-URL":appsScriptUrl+"?action=getBalance&bank="+encodeURIComponent(bankName)}
-});
-const text=await res.text();
-console.log("DEBUG raw balance response:",text);
-const data=JSON.parse(text);
-if(data.balance!==undefined){document.getElementById("balance").textContent=data.balance}
-else{document.getElementById("balance").textContent="Not found"}
-}catch(err){document.getElementById("balance").textContent="Error fetching balance";console.error("DEBUG Balance Fetch Error:",err)}
-}
-fetchBalance();
-</script>
+  <div class="container">
+    <h2>Welcome, <span id="bankName"></span></h2>
+    <h3>Select an option:</h3>
+    <button onclick="goTo('loan.html')">Loan</button>
+    <button onclick="alert('Equity page coming soon!')">Equity</button>
+    <button onclick="alert('Bond page coming soon!')">Bond</button>
+  </div>
+
+  <script>
+    document.getElementById("bankName").innerText = localStorage.getItem("bankName");
+    function goTo(page) {
+      window.location.href = page;
+    }
+  </script>
 </body>
 </html>
