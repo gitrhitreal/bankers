@@ -60,4 +60,48 @@
       <p class="balance">Current Balance: ₹ <span id="balance">Loading...</span></p>
     </div>
     <div class="card">
-      <h2>Choos
+      <h2>Choose an option:</h2>
+      <div class="options">
+        <div class="option" onclick="goTo('loan.html')">Loan</div>
+        <div class="option">Equity</div>
+        <div class="option">Bond</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const bank = localStorage.getItem("bankName");
+    const userId = localStorage.getItem("userId");
+
+    if (!bank || !userId) {
+      alert("You are not logged in!");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("bankName").textContent = bank;
+
+    function goTo(page) {
+      window.location.href = page;
+    }
+
+    async function fetchBalance() {
+      try {
+        const response = await fetch(
+          "YOUR_SCRIPT_URL?action=getBalance&bank=" + encodeURIComponent(bank)
+        );
+        const data = await response.json();
+        if (data.balance !== undefined) {
+          document.getElementById("balance").textContent = data.balance;
+        } else {
+          document.getElementById("balance").textContent = "Not found";
+        }
+      } catch (err) {
+        document.getElementById("balance").textContent = "Error fetching balance";
+        console.error(err);
+      }
+    }
+
+    fetchBalance();
+  </script>
+</body>
+</html>
