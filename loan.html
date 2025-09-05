@@ -142,7 +142,7 @@ async function approveLoan(loanName) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "approveLoan",
-        bank: bank,
+        bank: bankName,
         loanName: loanName,
         id: userId
       })
@@ -168,4 +168,5 @@ loadLoans();
 </script>
 </body>
 </html>
+
 
