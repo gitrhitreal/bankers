@@ -79,9 +79,10 @@ header {
 <div id="loanList">Loading loans...</div>
 
 <script>
-// Replace with your deployed Apps Script URL
+// 1️⃣ Replace this with your deployed Apps Script /exec URL
 const webAppUrl = "https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec";
 
+// 2️⃣ Get user info from localStorage
 const bankName = localStorage.getItem("bankName")?.trim();
 const userId = localStorage.getItem("userId")?.trim();
 
@@ -90,6 +91,7 @@ if (!bankName || !userId) {
   window.location.href = "index.html";
 }
 
+// 3️⃣ Load loans for this bank
 async function loadLoans() {
   const loanList = document.getElementById("loanList");
   loanList.innerHTML = "Loading loans...";
@@ -127,6 +129,7 @@ async function loadLoans() {
   }
 }
 
+// 4️⃣ Approve loan
 async function approveLoan(loanName) {
   console.log("DEBUG approving loan:", { bank: bankName, loanName, id: userId });
 
@@ -136,8 +139,8 @@ async function approveLoan(loanName) {
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
         action: "approveLoan",
-        bank: bankName,
-        loanName: loanName,
+        bank: bankName,       // Must be 'bank', not 'bankName'
+        loanName: loanName,   // Must match Loan Name column
         id: userId
       })
     });
@@ -158,8 +161,8 @@ async function approveLoan(loanName) {
   }
 }
 
+// 5️⃣ Initialize
 loadLoans();
 </script>
 </body>
 </html>
-
