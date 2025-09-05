@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loan Selection</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #333;
+    }
+    .container {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 360px;
+      max-width: 90%;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    h3 {
+      margin-bottom: 20px;
+      color: #222;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      margin: 10px 0;
+    }
+    button {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      border: none;
+      color: white;
+      padding: 12px 20px;
+      margin: 8px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s, background 0.3s;
+      width: 100%;
+    }
+    button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Select a Loan</h3>
+    <ul>
+      <li><button onclick="approveLoan('Home Loan')">Home Loan</button></li>
+      <li><button onclick="approveLoan('Car Loan')">Car Loan</button></li>
+      <li><button onclick="approveLoan('Education Loan')">Education Loan</button></li>
+      <li><button onclick="approveLoan('Personal Loan')">Personal Loan</button></li>
+    </ul>
+  </div>
+
+  <script>
+    function approveLoan(loanType) {
+      const bank = localStorage.getItem("bankName");
+      const loginId = localStorage.getItem("userId");
+
+      fetch("https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec", {
+        method: "POST",
+        mode: "no-cors", // important for Google Apps Script
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: loginId,
+          bank: bank,
+          loan: loanType
+        })
+      })
+      .then(() => {
+        alert(bank + " approved " + loanType + "!");
+        window.location.href = "dashboard.html";
+      })
+      .catch(err => alert("Error sending data: " + err));
+    }
+  </script>
+</body>
+</html>
