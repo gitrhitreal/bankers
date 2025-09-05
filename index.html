@@ -71,6 +71,10 @@
       if (approvedBanks[loginId]) {
         localStorage.setItem("userId", loginId);
         localStorage.setItem("bankName", approvedBanks[loginId]);
+        console.log("DEBUG Saved to localStorage:", {
+          userId: loginId,
+          bankName: approvedBanks[loginId]
+        });
         window.location.href = "dashboard.html";
       } else {
         document.getElementById("error").innerText = "Invalid Bank ID!";
