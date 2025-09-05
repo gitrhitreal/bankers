@@ -87,7 +87,7 @@
     async function fetchBalance() {
       try {
         const response = await fetch(
-          "YOUR_SCRIPT_URL?action=getBalance&bank=" + encodeURIComponent(bank)
+          "https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec?action=getBalance&bank=" + encodeURIComponent(bank)
         );
         const data = await response.json();
         if (data.balance !== undefined) {
@@ -105,3 +105,4 @@
   </script>
 </body>
 </html>
+
