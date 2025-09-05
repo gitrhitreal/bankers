@@ -1,137 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loan Selection</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #74ABE2, #5563DE);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-    }
-    header {
-      background: rgba(255,255,255,0.15);
-      width: 100%;
-      padding: 20px;
-      text-align: center;
-      color: #fff;
-      font-size: 24px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    #loanList {
-      margin: 40px auto;
-      width: 90%;
-      max-width: 800px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-    }
-    .loan-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-    }
-    .loan-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
-    }
-    .loan-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #333;
-    }
-    .loan-details {
-      font-size: 14px;
-      margin-bottom: 15px;
-      color: #555;
-    }
-    .approve-btn {
-      padding: 10px 15px;
-      border: none;
-      background: #5563DE;
-      color: white;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .approve-btn:hover {
-      background: #3340b8;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Selection</title>
+<style>
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#74ABE2,#5563DE);margin:0;padding:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
+header{background:rgba(255,255,255,0.15);width:100%;padding:20px;text-align:center;color:#fff;font-size:24px;font-weight:bold;box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+#loanList{margin:40px auto;width:90%;max-width:800px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+.loan-card{background:white;border-radius:12px;padding:20px;box-shadow:0 4px 10px rgba(0,0,0,0.15);text-align:center;transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;}
+.loan-card:hover{transform:translateY(-5px);box-shadow:0 6px 14px rgba(0,0,0,0.25);}
+.loan-title{font-size:18px;font-weight:bold;margin-bottom:10px;color:#333;}
+.loan-details{font-size:14px;margin-bottom:15px;color:#555;}
+.approve-btn{padding:10px 15px;border:none;background:#5563DE;color:white;font-weight:bold;border-radius:8px;cursor:pointer;transition:background 0.2s;}
+.approve-btn:hover{background:#3340b8;}
+</style>
 </head>
 <body>
-  <header>Available Loan Portfolios</header>
+<header>Available Loan Portfolios</header>
+<div id="loanList">Loading loans...</div>
 
-  <div id="loanList">Loading loans...</div>
+<script>
+const webAppUrl = "YOUR_SCRIPT_URL_HERE"; // replace with your Apps Script /exec link
+const bank = localStorage.getItem("bankName");
+const userId = localStorage.getItem("userId");
 
-  <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec"; // replace with your Apps Script /exec link
+if(!bank || !userId){ alert("Please login!"); window.location.href="index.html"; }
 
-    document.addEventListener("DOMContentLoaded", function() {
-      const bankName = localStorage.getItem("bankName");
-      const loanList = document.getElementById("loanList");
+async function loadLoans(){
+  try{
+    const res = await fetch(`${webAppUrl}?action=getLoans`);
+    const loans = await res.json();
+    const filtered = loans.filter(l => l.Bank.trim() === bank);
+    const loanList = document.getElementById("loanList");
+    loanList.innerHTML="";
 
-      fetch(webAppUrl + "?action=getLoans")
-        .then(res => res.json())
-        .then(loans => {
-          const filtered = loans.filter(loan => loan.Bank === bankName);
-          loanList.innerHTML = "";
+    if(filtered.length===0){
+      loanList.innerHTML="<p style='color:white;'>No loans available for your bank.</p>";
+      return;
+    }
 
-          if (filtered.length === 0) {
-            loanList.innerHTML = "<p style='color:white;'>No loans available for your bank.</p>";
-          } else {
-            filtered.forEach(loan => {
-              const card = document.createElement("div");
-              card.className = "loan-card";
-
-              card.innerHTML = `
-                <div class="loan-title">${loan["Loan Name"]}</div>
-                <div class="loan-details">Amount: ${loan.Amount}</div>
-                <div class="loan-details">Tenure: ${loan.Tenure}</div>
-                <div class="loan-details">Interest: ${loan.Interest}</div>
-                <button class="approve-btn">Approve</button>
-              `;
-
-              card.querySelector(".approve-btn").onclick = () => approveLoan(loan["Loan Name"]);
-              loanList.appendChild(card);
-            });
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          loanList.innerHTML = "<p style='color:white;'>Error loading loans.</p>";
-        });
+    filtered.forEach(loan=>{
+      const card=document.createElement("div");
+      card.className="loan-card";
+      card.innerHTML=`
+        <div class="loan-title">${loan["Loan Name"]}</div>
+        <div class="loan-details">Amount: ${loan.Amount}</div>
+        <div class="loan-details">Tenure: ${loan.Tenure}</div>
+        <div class="loan-details">Interest: ${loan.Interest}</div>
+        <button class="approve-btn">Approve</button>
+      `;
+      card.querySelector(".approve-btn").onclick=()=>approveLoan(loan["Loan Name"]);
+      loanList.appendChild(card);
     });
 
-    function approveLoan(loanType) {
-      const loginId = localStorage.getItem("userId");
-      const bank = localStorage.getItem("bankName");
+  }catch(err){
+    console.error(err);
+    document.getElementById("loanList").innerHTML="<p style='color:white;'>Error loading loans.</p>";
+  }
+}
 
-      fetch(webAppUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: loginId, bank: bank, loan: loanType })
-      });
-
-      alert(`Loan "${loanType}" approved!`);
-      window.location.href = "dashboard.html";
+async function approveLoan(loanName){
+  try{
+    const res = await fetch(webAppUrl,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ action:"approveLoan", bank, loanName, id:userId })
+    });
+    const data = await res.json();
+    if(data.success){
+      alert(`Loan "${loanName}" approved!`);
+      loadLoans(); // reload loans
+    }else{
+      alert("Error: "+(data.error||"Unknown error"));
     }
-  </script>
+  }catch(err){
+    console.error(err);
+    alert("Error approving loan");
+  }
+}
+
+loadLoans();
+</script>
 </body>
 </html>
-
