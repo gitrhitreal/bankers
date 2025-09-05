@@ -20,7 +20,7 @@ header { background: rgba(255,255,255,0.15); width: 100%; padding: 20px; text-al
 <div id="loanList">Loading loans...</div>
 
 <script>
-const webAppUrl = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec";
 const proxyUrl = "https://api.cors.lol/?url=";
 const fetchUrl = proxyUrl + encodeURIComponent(webAppUrl);
 
@@ -59,3 +59,4 @@ async function loadLoans() {
       `;
       card.querySelector(".approve-btn").onclick = () => approveLoan(loan["Loan Name"]);
       loanList.appendChild(card);
+
