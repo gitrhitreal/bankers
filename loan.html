@@ -2,136 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Loan Selection</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #74ABE2, #5563DE);
       margin: 0;
-      padding: 0;
-      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
-      justify-content: flex-start;
-    }
-    header {
-      background: rgba(255,255,255,0.15);
-      width: 100%;
-      padding: 20px;
-      text-align: center;
-      color: #fff;
-      font-size: 24px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    #loanList {
-      margin: 40px auto;
-      width: 90%;
-      max-width: 800px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-    }
-    .loan-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-    }
-    .loan-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
-    }
-    .loan-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
+      height: 100vh;
       color: #333;
     }
-    .loan-details {
-      font-size: 14px;
-      margin-bottom: 15px;
-      color: #555;
+    .container {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 360px;
+      max-width: 90%;
+      animation: fadeIn 0.8s ease-in-out;
     }
-    .approve-btn {
-      padding: 10px 15px;
+    h3 {
+      margin-bottom: 20px;
+      color: #222;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      margin: 10px 0;
+    }
+    button {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
       border: none;
-      background: #5563DE;
       color: white;
-      font-weight: bold;
-      border-radius: 8px;
+      padding: 12px 20px;
+      margin: 8px 0;
+      border-radius: 10px;
       cursor: pointer;
-      transition: background 0.2s;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s, background 0.3s;
+      width: 100%;
     }
-    .approve-btn:hover {
-      background: #3340b8;
+    button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <header>Available Loan Portfolios</header>
-
-  <div id="loanList">Loading loans...</div>
+  <div class="container">
+    <h3>Select a Loan</h3>
+    <ul>
+      <li><button onclick="approveLoan('Home Loan')">Home Loan</button></li>
+      <li><button onclick="approveLoan('Car Loan')">Car Loan</button></li>
+      <li><button onclick="approveLoan('Education Loan')">Education Loan</button></li>
+      <li><button onclick="approveLoan('Personal Loan')">Personal Loan</button></li>
+    </ul>
+  </div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec"; // replace with your Apps Script /exec link
-
-    document.addEventListener("DOMContentLoaded", function() {
-      const bankName = localStorage.getItem("bankName");
-      const loanList = document.getElementById("loanList");
-
-      fetch(webAppUrl + "?action=getLoans")
-        .then(res => res.json())
-        .then(loans => {
-          const filtered = loans.filter(loan => loan.Bank === bankName);
-          loanList.innerHTML = "";
-
-          if (filtered.length === 0) {
-            loanList.innerHTML = "<p style='color:white;'>No loans available for your bank.</p>";
-          } else {
-            filtered.forEach(loan => {
-              const card = document.createElement("div");
-              card.className = "loan-card";
-
-              card.innerHTML = `
-                <div class="loan-title">${loan["Loan Name"]}</div>
-                <div class="loan-details">Amount: ${loan.Amount}</div>
-                <div class="loan-details">Tenure: ${loan.Tenure}</div>
-                <div class="loan-details">Interest: ${loan.Interest}</div>
-                <button class="approve-btn">Approve</button>
-              `;
-
-              card.querySelector(".approve-btn").onclick = () => approveLoan(loan["Loan Name"]);
-              loanList.appendChild(card);
-            });
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          loanList.innerHTML = "<p style='color:white;'>Error loading loans.</p>";
-        });
-    });
-
     function approveLoan(loanType) {
-      const loginId = localStorage.getItem("userId");
       const bank = localStorage.getItem("bankName");
+      const loginId = localStorage.getItem("userId");
 
-      fetch(webAppUrl, {
+      fetch("https://script.google.com/macros/s/PASTE-YOUR-EXEC-URL-HERE/exec", {
         method: "POST",
-        mode: "no-cors",
+        mode: "no-cors", // important for Google Apps Script
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: loginId, bank: bank, loan: loanType })
-      });
-
-      alert(`Loan "${loanType}" approved!`);
-      window.location.href = "dashboard.html";
+        body: JSON.stringify({
+          id: loginId,
+          bank: bank,
+          loan: loanType
+        })
+      })
+      .then(() => {
+        alert(bank + " approved " + loanType + "!");
+        window.location.href = "dashboard.html";
+      })
+      .catch(err => alert("Error sending data: " + err));
     }
   </script>
 </body>
 </html>
-
