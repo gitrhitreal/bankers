@@ -21,30 +21,10 @@ body {
   width: 300px;
   text-align: center;
 }
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-button {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  background: #4CAF50;
-  color: white;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-button:hover {
-  background: #45a049;
-}
-#error {
-  color: red;
-  margin-top: 10px;
-}
+input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; }
+button { width: 100%; padding: 10px; border: none; background: #4CAF50; color: white; font-size: 16px; border-radius: 8px; cursor: pointer; }
+button:hover { background: #45a049; }
+#error { color: red; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -68,7 +48,6 @@ const approvedBanks = {
 function login(e) {
   e.preventDefault();
   const loginId = document.getElementById("loginId").value.trim();
-  
   if (approvedBanks[loginId]) {
     localStorage.setItem("userId", loginId);
     localStorage.setItem("bankName", approvedBanks[loginId]);
