@@ -75,12 +75,15 @@
 
   <script>
     const webAppUrl = "https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec"; // replace with your Apps Script URL
-    const bank = localStorage.getItem("bank");
+    const bank = localStorage.getItem("bankName");
+    const loginId = localStorage.getItem("userId");
 
-    if (!bank) {
-      alert("You are not logged in!");
-      window.location.href = "index.html";
-    }
+    if (!bank || !loginId) {
+    alert("You are not logged in!");
+    window.location.href = "index.html";
+}
+
+document.getElementById("bankName").textContent = bank;
 
     document.getElementById("bankName").textContent = bank;
 
@@ -104,4 +107,5 @@
   </script>
 </body>
 </html>
+
 
