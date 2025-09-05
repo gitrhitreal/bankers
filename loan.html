@@ -80,11 +80,13 @@ header {
 
 <script>
 // Replace with your deployed Apps Script URL
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxBVvbQnV66Iv2T9yhO8znAjgW4N86-LdBD0WbH3gOs01sxaxtfQXhGFZSYsdl3yCHyPw/exec";
+const webAppUrl = "YOUR_SCRIPT_URL_HERE";
 
 const bankName = localStorage.getItem("bankName")?.trim();
-if (!bankName) {
-  alert("Bank not found. Please login.");
+const userId = localStorage.getItem("userId")?.trim();
+
+if (!bankName || !userId) {
+  alert("Bank or user ID missing. Please login.");
   window.location.href = "index.html";
 }
 
@@ -115,7 +117,6 @@ async function loadLoans() {
         <div class="loan-details">Interest: ${loan.Interest}</div>
         <button class="approve-btn">Approve</button>
       `;
-
       card.querySelector(".approve-btn").onclick = () => approveLoan(loan["Loan Name"]);
       loanList.appendChild(card);
     });
@@ -127,19 +128,12 @@ async function loadLoans() {
 }
 
 async function approveLoan(loanName) {
-  const bank = localStorage.getItem("bankName")?.trim();
-  const userId = localStorage.getItem("userId")?.trim();
-
-  if (!bank || !userId) {
-    alert("Please login again.");
-    window.location.href = "index.html";
-    return;
-  }
+  console.log("DEBUG approving loan:", { bank: bankName, loanName, id: userId });
 
   try {
-    const response = await fetch(webAppUrl, {
+    const res = await fetch(webAppUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
         action: "approveLoan",
         bank: bankName,
@@ -148,7 +142,7 @@ async function approveLoan(loanName) {
       })
     });
 
-    const data = await response.json();
+    const data = await res.json();
     console.log("DEBUG approve response:", data);
 
     if (data.success) {
@@ -158,9 +152,9 @@ async function approveLoan(loanName) {
       alert("Error approving loan: " + (data.error || "Unknown error"));
     }
 
-  } catch (err) {
+  } catch(err) {
     console.error("DEBUG approve fetch error:", err);
-    alert("Error approving loan (check console)");
+    alert("Error approving loan: check console");
   }
 }
 
@@ -168,5 +162,3 @@ loadLoans();
 </script>
 </body>
 </html>
-
-
