@@ -1,4 +1,4 @@
-e<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -24,7 +24,10 @@ e<!DOCTYPE html>
       max-width: 90%;
       animation: fadeIn 0.8s ease-in-out;
     }
-    h2, h3 { margin-bottom: 20px; color: #222; }
+    h2, h3 {
+      margin-bottom: 20px;
+      color: #222;
+    }
     button {
       display: block;
       width: 100%;
@@ -43,6 +46,12 @@ e<!DOCTYPE html>
       transform: scale(1.05);
       background: linear-gradient(135deg, #764ba2, #667eea);
     }
+    .logout {
+      background: linear-gradient(135deg, #ff6a6a, #d64545);
+    }
+    .logout:hover {
+      background: linear-gradient(135deg, #d64545, #ff6a6a);
+    }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
@@ -54,16 +63,27 @@ e<!DOCTYPE html>
     <h2>Welcome, <span id="bankName"></span></h2>
     <h3>Select an option:</h3>
     <button onclick="goTo('loan.html')">Loan</button>
-    <button onclick="alert('Equity page coming soon!')">Equity</button>
-    <button onclick="alert('Bond page coming soon!')">Bond</button>
+    <button onclick="goTo('equity.html')">Equity</button>
+    <button onclick="goTo('bond.html')">Bond</button>
+    <button class="logout" onclick="logout()">Logout</button>
   </div>
 
   <script>
+    // Redirect to login if not logged in
+    if (!localStorage.getItem("userId")) {
+      window.location.href = "index.html";
+    }
+
     document.getElementById("bankName").innerText = localStorage.getItem("bankName");
+
     function goTo(page) {
       window.location.href = page;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
     }
   </script>
 </body>
 </html>
-
