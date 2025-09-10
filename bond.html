@@ -1,67 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Bond Trading</title>
+  <meta charset="UTF-8">
+  <title>Bonds</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f7fa; margin:0; padding:20px; }
-    .container { max-width:1000px; margin:auto; }
-    .card { background:#fff; padding:20px; margin:15px 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-    .card h2 { margin-top:0; font-size:20px; color:#333; }
-    .card p { margin:5px 0; color:#555; }
-    button { border:none; padding:8px 14px; border-radius:6px; cursor:pointer; margin-top:10px; margin-right:8px; }
-    .buy { background:#4CAF50; color:#fff; }
-    .buy:hover { background:#45a049; }
-    .sell { background:#e53935; color:#fff; }
-    .sell:hover { background:#c62828; }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    .card {
+      background: white; padding: 20px; margin: 10px 0;
+      border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    button {
+      margin: 5px; padding: 8px 14px;
+      border: none; border-radius: 4px; cursor: pointer;
+    }
+    .buy { background: #007bff; color: white; }
+    .buy:hover { background: #0069d9; }
+    .sell { background: #dc3545; color: white; }
+    .sell:hover { background: #c82333; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Bond Trading</h1>
-    <div id="bonds"></div>
-  </div>
+  <h2>Available Bonds</h2>
+  <div id="bonds"></div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
-    const currentUser = "Axis Bank"; // example bank
+    const userBank = localStorage.getItem("bank") || "Axis Bank"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
 
-    async function loadBonds() {
-      const res = await fetch(webAppUrl + "?action=getBonds");
-      const bonds = await res.json();
+    async function fetchBonds() {
+      const res = await fetch(`${API_URL}?action=getBonds`);
+      const data = await res.json();
       const container = document.getElementById("bonds");
       container.innerHTML = "";
-      bonds.forEach(bond => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <h2>${bond["Bond Name"]}</h2>
-          <p><b>Price:</b> ${bond["Current Price"]}</p>
-          <p><b>Quantity:</b> ${bond.Quantity}</p>
-          <button class="buy" onclick="tradeBond('${bond["Bond Name"]}', 1, ${bond['Current Price']})">Buy</button>
-          <button class="sell" onclick="tradeBond('${bond["Bond Name"]}', -1, ${bond['Current Price']})">Sell</button>
+      data.forEach(b => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <h3>${b["Bond Name"]}</h3>
+          <p><b>Price:</b> ${b["Current Price"]}</p>
+          <button class="buy" onclick="tradeBond('${b["Bond Name"]}', ${b["Current Price"]}, 'buy')">Buy</button>
+          <button class="sell" onclick="tradeBond('${b["Bond Name"]}', ${b["Current Price"]}, 'sell')">Sell</button>
         `;
-        container.appendChild(card);
+        container.appendChild(div);
       });
     }
 
-    function tradeBond(bond, qty, price) {
-      fetch(webAppUrl, {
+    async function tradeBond(name, price, type) {
+      const qty = parseInt(prompt(`Enter quantity to ${type}:`), 10);
+      if (!qty || qty <= 0) return;
+      const res = await fetch(API_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action:"tradeBond",
-          user: currentUser,
-          bond,
-          quantity: qty,
-          currentPrice: price
+          action: "tradeBond", user: userBank,
+          bond: name, currentPrice: price,
+          quantity: qty, tradeType: type
         })
       });
-      alert((qty>0 ? "Bought " : "Sold ") + bond);
-      setTimeout(loadBonds, 500);
+      const result = await res.json();
+      if (result.status === "success") {
+        alert(`✅ Bond ${type} successful!`);
+        fetchBonds();
+      } else {
+        alert("❌ Error: " + result.message);
+      }
     }
 
-    loadBonds();
+    fetchBonds();
   </script>
 </body>
 </html>
