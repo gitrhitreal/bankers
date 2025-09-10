@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bond Selection</title>
+  <title>Bond Market</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
       margin: 0;
       padding: 0;
       min-height: 100vh;
@@ -17,11 +16,11 @@
       justify-content: flex-start;
     }
     header {
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.2);
       width: 100%;
       padding: 20px;
       text-align: center;
-      color: #fff;
+      color: #333;
       font-size: 24px;
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -34,7 +33,7 @@
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 20px;
     }
-    .card {
+    .bond-card {
       background: white;
       border-radius: 12px;
       padding: 20px;
@@ -43,99 +42,96 @@
       transition: transform 0.2s, box-shadow 0.2s;
       cursor: pointer;
     }
-    .card:hover {
+    .bond-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 6px 14px rgba(0,0,0,0.25);
     }
-    .title {
+    .bond-title {
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 10px;
       color: #333;
     }
-    .details {
+    .bond-details {
       font-size: 14px;
       margin-bottom: 15px;
       color: #555;
     }
-    .approve-btn {
-      display: block;
-      width: 100%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+    .buy-btn {
+      padding: 10px 15px;
       border: none;
+      background: #e75480;
       color: white;
-      padding: 14px;
-      margin: 10px 0;
-      border-radius: 10px;
+      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      transition: transform 0.2s, background 0.3s;
+      transition: background 0.2s;
     }
-    .approve-btn:hover {
-      transform: scale(1.05);
-      background: linear-gradient(135deg, #764ba2, #667eea);
+    .buy-btn:hover {
+      background: #c63b60;
     }
   </style>
 </head>
 <body>
   <header>Available Bonds</header>
+
   <div id="bondList">Loading bonds...</div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // replace
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // replace with your Apps Script link
 
     document.addEventListener("DOMContentLoaded", function() {
-      const userId = localStorage.getItem("userId");
-      const list = document.getElementById("bondList");
+      const bankName = localStorage.getItem("bankName");
+      const bondList = document.getElementById("bondList");
 
       fetch(webAppUrl + "?action=getBonds")
         .then(res => res.json())
         .then(bonds => {
-          list.innerHTML = "";
-          if (!bonds || bonds.length === 0) {
-            list.innerHTML = "<p style='color:white;'>No bonds available.</p>";
+          bondList.innerHTML = "";
+          if (bonds.length === 0) {
+            bondList.innerHTML = "<p style='color:white;'>No bonds available.</p>";
           } else {
             bonds.forEach(bond => {
               const card = document.createElement("div");
-              card.className = "card";
+              card.className = "bond-card";
 
               card.innerHTML = `
-                <div class="title">${bond["Bond Name"]}</div>
-                <div class="details">Current Price: ${bond["Current Price"]}</div>
-                <div class="details">Future Value: ${bond["Future Value"]}</div>
-                <div class="details">Risk: ${bond["Risk Probability"]}</div>
-                <button class="approve-btn">Buy</button>
+                <div class="bond-title">${bond["Bond Name"]}</div>
+                <div class="bond-details">Price: ${bond["Current Price"]}</div>
+                <div class="bond-details">Yield: ${bond["Yield"]}</div>
+                <button class="buy-btn">Buy</button>
               `;
 
-              card.querySelector(".approve-btn").onclick = () => buyBond(bond["Bond Name"]);
-              list.appendChild(card);
+              card.querySelector(".buy-btn").onclick = () => buyBond(bond["Bond Name"], bond["Current Price"]);
+              bondList.appendChild(card);
             });
           }
         })
         .catch(err => {
           console.error(err);
-          list.innerHTML = "<p style='color:white;'>Error loading bonds.</p>";
+          bondList.innerHTML = "<p style='color:white;'>Error loading bonds.</p>";
         });
     });
 
-    function buyBond(name) {
+    function buyBond(bondName, currentPrice) {
       const userId = localStorage.getItem("userId");
+      const bankName = localStorage.getItem("bankName");
 
       fetch(webAppUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "buyBond",
-          user: userId,
-          bond: name
+          user: bankName,
+          bond: bondName,
+          currentPrice: currentPrice
         })
       })
       .then(res => res.json())
       .then(resp => {
         if (resp.status === "success") {
-          alert("Bond purchased!");
-          window.location.reload();
+          alert(`Bond "${bondName}" bought successfully!`);
+          window.location.href = "dashboard.html";
         } else {
           alert("❌ " + resp.message);
         }
