@@ -28,6 +28,7 @@
 
     document.addEventListener("DOMContentLoaded", function() {
       const bankName = localStorage.getItem("bankName");
+      const loginId = localStorage.getItem("userId");
       const itemList = document.getElementById("itemList");
 
       fetch(`${webAppUrl}?action=getItems&type=${type}`)
@@ -40,16 +41,16 @@
             itemList.innerHTML = "<p style='color:white;'>No equities available for your bank.</p>";
           } else {
             filtered.forEach(item => {
+              // Get how many shares this user owns from trades sheet (optional extra call in backend)
+              let quantityHeld = item[loginId] || 0; // if you store per-user holdings in sheet
+
               const card = document.createElement("div");
               card.className = "item-card";
 
               card.innerHTML = `
                 <div class="item-title">${item["Equity Name"]}</div>
                 <div class="item-details">Current Price: ${item["Current Price"]}</div>
-                <div class="item-details">Performance: ${item["Company Performance"]}</div>
-                <div class="item-details">Sector: ${item["Sector"]}</div>
-                <div class="item-details">Risk: ${item["Risk Level"]}</div>
-                <div class="item-details">Buyers: ${item["Buyers"]}, Sellers: ${item["Sellers"]}</div>
+                <div class="item-details">Your Holdings: ${quantityHeld}</div>
                 <button class="action-btn buy-btn">Buy</button>
                 <button class="action-btn sell-btn">Sell</button>
               `;
