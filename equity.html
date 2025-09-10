@@ -3,83 +3,149 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equity Market</title>
+  <title>Equity Selection</title>
   <style>
-    body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #36d1dc, #5b86e5); margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-    header { background: rgba(255,255,255,0.15); width: 100%; padding: 20px; text-align: center; color: #fff; font-size: 24px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-    #itemList { margin: 40px auto; width: 90%; max-width: 900px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-    .item-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); text-align: center; }
-    .item-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-    .item-details { font-size: 14px; margin-bottom: 8px; color: #555; }
-    .action-btn { padding: 8px 12px; border: none; margin: 4px; font-weight: bold; border-radius: 8px; cursor: pointer; }
-    .buy-btn { background: #5b86e5; color: white; }
-    .buy-btn:hover { background: #3a5ccf; }
-    .sell-btn { background: #ff5b5b; color: white; }
-    .sell-btn:hover { background: #d94141; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    header {
+      background: rgba(255,255,255,0.15);
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    #equityList {
+      margin: 40px auto;
+      width: 90%;
+      max-width: 800px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .equity-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .equity-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+    }
+    .equity-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .equity-details {
+      font-size: 14px;
+      margin-bottom: 15px;
+      color: #555;
+    }
+    .trade-input {
+      width: 60px;
+      padding: 6px;
+      margin-right: 6px;
+      text-align: center;
+    }
+    .trade-btn {
+      padding: 8px 12px;
+      border: none;
+      background: #5563DE;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 4px;
+      transition: background 0.2s;
+    }
+    .trade-btn:hover {
+      background: #3340b8;
+    }
   </style>
 </head>
 <body>
-  <header>Equity Market</header>
-  <div id="itemList">Loading...</div>
+  <header>Available Equities</header>
+
+  <div id="equityList">Loading equities...</div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; 
-    const type = "equity";
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // replace with your Apps Script /exec link
 
     document.addEventListener("DOMContentLoaded", function() {
-      const bankName = localStorage.getItem("bankName");
-      const loginId = localStorage.getItem("userId");
-      const itemList = document.getElementById("itemList");
+      const userId = localStorage.getItem("userId");
+      const equityList = document.getElementById("equityList");
 
-      fetch(`${webAppUrl}?action=getItems&type=${type}`)
+      fetch(webAppUrl + "?action=getEquities&user=" + encodeURIComponent(userId))
         .then(res => res.json())
-        .then(items => {
-          const filtered = items.filter(item => item.Bank === bankName);
-          itemList.innerHTML = "";
+        .then(equities => {
+          equityList.innerHTML = "";
 
-          if (filtered.length === 0) {
-            itemList.innerHTML = "<p style='color:white;'>No equities available for your bank.</p>";
+          if (!equities || equities.length === 0) {
+            equityList.innerHTML = "<p style='color:white;'>No equities available.</p>";
           } else {
-            filtered.forEach(item => {
-              // Get how many shares this user owns from trades sheet (optional extra call in backend)
-              let quantityHeld = item[loginId] || 0; // if you store per-user holdings in sheet
-
+            equities.forEach(eq => {
               const card = document.createElement("div");
-              card.className = "item-card";
+              card.className = "equity-card";
 
               card.innerHTML = `
-                <div class="item-title">${item["Equity Name"]}</div>
-                <div class="item-details">Current Price: ${item["Current Price"]}</div>
-                <div class="item-details">Your Holdings: ${quantityHeld}</div>
-                <button class="action-btn buy-btn">Buy</button>
-                <button class="action-btn sell-btn">Sell</button>
+                <div class="equity-title">${eq["Equity Name"]}</div>
+                <div class="equity-details">Current Price: ${eq["Current Price"]}</div>
+                <div class="equity-details">Your Holdings: ${eq["Your Holdings"] || 0}</div>
+                <input type="number" class="trade-input" min="1" value="1">
+                <button class="trade-btn buy-btn">Buy</button>
+                <button class="trade-btn sell-btn">Sell</button>
               `;
 
-              card.querySelector(".buy-btn").onclick = () => tradeEquity(item["Equity Name"], "buy");
-              card.querySelector(".sell-btn").onclick = () => tradeEquity(item["Equity Name"], "sell");
-              itemList.appendChild(card);
+              const qtyInput = card.querySelector(".trade-input");
+              card.querySelector(".buy-btn").onclick = () => tradeEquity(eq["Equity Name"], "buy", qtyInput.value);
+              card.querySelector(".sell-btn").onclick = () => tradeEquity(eq["Equity Name"], "sell", qtyInput.value);
+
+              equityList.appendChild(card);
             });
           }
         })
         .catch(err => {
           console.error(err);
-          itemList.innerHTML = "<p style='color:white;'>Error loading equities.</p>";
+          equityList.innerHTML = "<p style='color:white;'>Error loading equities.</p>";
         });
     });
 
-    function tradeEquity(itemName, action) {
-      const loginId = localStorage.getItem("userId");
-      const bank = localStorage.getItem("bankName");
-
+    function tradeEquity(equityName, action, qty) {
+      const userId = localStorage.getItem("userId");
       fetch(webAppUrl, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: loginId, bank: bank, type: type, item: itemName, action: action })
+        body: JSON.stringify({ type: "equity", action, id: userId, equity: equityName, quantity: Number(qty) })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert(`${action.toUpperCase()} successful for ${equityName} (${qty} units)!`);
+          window.location.reload();
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error while trading equity.");
       });
-
-      alert(`You chose to ${action} equity: "${itemName}"!`);
-      window.location.reload();
     }
   </script>
 </body>
