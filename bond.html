@@ -3,59 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bond Selection</title>
+  <title>Bond Market</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ff9966, #ff5e62);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    header {
-      background: rgba(255,255,255,0.15);
-      width: 100%;
-      padding: 20px;
-      text-align: center;
-      color: #fff;
-      font-size: 24px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    #itemList {
-      margin: 40px auto;
-      width: 90%;
-      max-width: 800px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-    }
-    .item-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      text-align: center;
-    }
+    body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #43cea2, #185a9d); margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+    header { background: rgba(255,255,255,0.15); width: 100%; padding: 20px; text-align: center; color: #fff; font-size: 24px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    #itemList { margin: 40px auto; width: 90%; max-width: 900px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+    .item-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); text-align: center; }
     .item-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
     .item-details { font-size: 14px; margin-bottom: 8px; color: #555; }
-    .approve-btn {
-      padding: 10px 15px;
-      border: none;
-      background: #ff5e62;
-      color: white;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .approve-btn:hover { background: #e74c3c; }
+    .approve-btn { padding: 10px 15px; border: none; background: #185a9d; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .approve-btn:hover { background: #0f3f73; }
   </style>
 </head>
 <body>
-  <header>Available Bond Portfolios</header>
+  <header>Bond Market</header>
   <div id="itemList">Loading...</div>
 
   <script>
@@ -81,14 +42,12 @@
 
               card.innerHTML = `
                 <div class="item-title">${item["Bond Name"]}</div>
-                <div class="item-details">Face Value: ${item["Face Value (FV)"]}</div>
-                <div class="item-details">YTM: ${item["YTM"]}</div>
-                <div class="item-details">Time: ${item["Time (Years)"]} years</div>
-                <div class="item-details">Price: ${item["Price (Auto)"]}</div>
+                <div class="item-details">Duration: ${item["Tenure"]}</div>
+                <div class="item-details">Current Price: ${item["Current Price"]}</div>
                 <button class="approve-btn">Approve</button>
               `;
 
-              card.querySelector(".approve-btn").onclick = () => approveItem(item["Bond Name"]);
+              card.querySelector(".approve-btn").onclick = () => approveBond(item["Bond Name"]);
               itemList.appendChild(card);
             });
           }
@@ -99,7 +58,7 @@
         });
     });
 
-    function approveItem(itemName) {
+    function approveBond(itemName) {
       const loginId = localStorage.getItem("userId");
       const bank = localStorage.getItem("bankName");
 
