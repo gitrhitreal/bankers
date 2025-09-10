@@ -4,7 +4,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bond Selection</title>
-  <!-- copy same CSS from loan.html -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff9966, #ff5e62);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      background: rgba(255,255,255,0.15);
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    #itemList {
+      margin: 40px auto;
+      width: 90%;
+      max-width: 800px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .item-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+    .item-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+    .item-details { font-size: 14px; margin-bottom: 8px; color: #555; }
+    .approve-btn {
+      padding: 10px 15px;
+      border: none;
+      background: #ff5e62;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .approve-btn:hover { background: #e74c3c; }
+  </style>
 </head>
 <body>
   <header>Available Bond Portfolios</header>
@@ -14,7 +62,57 @@
     const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; 
     const type = "bond";
 
-    // same script logic as loan.html, but use item["Bond Name"]
+    document.addEventListener("DOMContentLoaded", function() {
+      const bankName = localStorage.getItem("bankName");
+      const itemList = document.getElementById("itemList");
+
+      fetch(`${webAppUrl}?action=getItems&type=${type}`)
+        .then(res => res.json())
+        .then(items => {
+          const filtered = items.filter(item => item.Bank === bankName);
+          itemList.innerHTML = "";
+
+          if (filtered.length === 0) {
+            itemList.innerHTML = "<p style='color:white;'>No bonds available for your bank.</p>";
+          } else {
+            filtered.forEach(item => {
+              const card = document.createElement("div");
+              card.className = "item-card";
+
+              card.innerHTML = `
+                <div class="item-title">${item["Bond Name"]}</div>
+                <div class="item-details">Face Value: ${item["Face Value (FV)"]}</div>
+                <div class="item-details">YTM: ${item["YTM"]}</div>
+                <div class="item-details">Time: ${item["Time (Years)"]} years</div>
+                <div class="item-details">Price: ${item["Price (Auto)"]}</div>
+                <button class="approve-btn">Approve</button>
+              `;
+
+              card.querySelector(".approve-btn").onclick = () => approveItem(item["Bond Name"]);
+              itemList.appendChild(card);
+            });
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          itemList.innerHTML = "<p style='color:white;'>Error loading bonds.</p>";
+        });
+    });
+
+    function approveItem(itemName) {
+      const loginId = localStorage.getItem("userId");
+      const bank = localStorage.getItem("bankName");
+
+      fetch(webAppUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: loginId, bank: bank, type: type, item: itemName })
+      });
+
+      alert(`Bond "${itemName}" approved!`);
+      window.location.href = "dashboard.html";
+    }
   </script>
 </body>
 </html>
