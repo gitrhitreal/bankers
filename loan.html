@@ -79,7 +79,7 @@
   <div id="loanList">Loading loans...</div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // replace with your Apps Script /exec link
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
 
     document.addEventListener("DOMContentLoaded", function() {
       const bankName = localStorage.getItem("bankName");
@@ -123,13 +123,24 @@
 
       fetch(webAppUrl, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: loginId, bank: bank, loan: loanType })
-      });
-
-      alert(`Loan "${loanType}" approved!`);
-      window.location.href = "dashboard.html";
+        body: JSON.stringify({ 
+          action: "approveLoan",
+          id: loginId, 
+          bank: bank, 
+          loan: loanType 
+        })
+      })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp.status === "success") {
+          alert(`Loan "${loanType}" approved!`);
+          window.location.href = "dashboard.html";
+        } else {
+          alert("❌ " + resp.message);
+        }
+      })
+      .catch(err => alert("Error: " + err));
     }
   </script>
 </body>
