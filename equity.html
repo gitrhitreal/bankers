@@ -2,87 +2,165 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Equities</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equity Selection</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #eef; margin: 0; padding: 20px; }
-    .equity-card { background: white; padding: 15px; margin: 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    .equity-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
-    .equity-details { font-size: 14px; margin-bottom: 6px; }
-    input { padding: 5px; margin-right: 5px; }
-    button { padding: 6px 10px; margin-right: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      background: rgba(255,255,255,0.15);
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    #equityList {
+      margin: 40px auto;
+      width: 90%;
+      max-width: 800px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .equity-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .equity-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+    }
+    .equity-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .equity-details {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #555;
+    }
+    input.qty-input {
+      width: 60px;
+      padding: 5px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .action-btn {
+      padding: 8px 14px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      background: #5563DE;
+      transition: background 0.2s;
+    }
+    .action-btn:hover {
+      background: #3340b8;
+    }
   </style>
 </head>
 <body>
-  <h2>Available Equities</h2>
+  <header>Available Equities</header>
   <div id="equityList">Loading equities...</div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; 
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // replace with your /exec URL
 
     document.addEventListener("DOMContentLoaded", function() {
       const userId = localStorage.getItem("userId");
-      const equityList = document.getElementById("equityList");
+      const list = document.getElementById("equityList");
 
       fetch(webAppUrl + "?action=getEquities&user=" + encodeURIComponent(userId))
         .then(res => res.json())
         .then(equities => {
-          equityList.innerHTML = "";
+          list.innerHTML = "";
           if (!equities || equities.length === 0) {
-            equityList.innerHTML = "<p>No equities available.</p>";
+            list.innerHTML = "<p style='color:white;'>No equities available.</p>";
           } else {
             equities.forEach(eq => {
               const card = document.createElement("div");
               card.className = "equity-card";
+
               card.innerHTML = `
                 <div class="equity-title">${eq["Equity Name"]}</div>
-                <div class="equity-details">Current Price: ${eq["Current Price"]}</div>
+                <div class="equity-details">Price: ${eq["Current Price"]}</div>
                 <div class="equity-details">Future Value: ${eq["Future Value"]}</div>
-                <div class="equity-details">Risk Probability: ${eq["Risk Probability"]}</div>
-                <div class="equity-details">Your Holdings: ${eq["Your Holdings"]}</div>
-                <input type="number" min="1" placeholder="Qty" id="qty-${eq["Equity Name"]}">
-                <button onclick="tradeEquity('${eq["Equity Name"]}', 'buy')">Buy</button>
-                <button onclick="tradeEquity('${eq["Equity Name"]}', 'sell')">Sell</button>
+                <div class="equity-details">Risk: ${eq["Risk Probability"]}</div>
+                <div class="equity-details">Your Holdings: ${eq["Your Holdings"] || 0}</div>
+                <input class="qty-input" type="number" min="1" value="1">
+                <button class="action-btn buy-btn">Buy</button>
+                <button class="action-btn sell-btn">Sell</button>
               `;
-              equityList.appendChild(card);
+
+              const qtyInput = card.querySelector(".qty-input");
+
+              card.querySelector(".buy-btn").onclick = () => {
+                buySellEquity(eq["Equity Name"], parseInt(qtyInput.value), "buy");
+              };
+
+              card.querySelector(".sell-btn").onclick = () => {
+                buySellEquity(eq["Equity Name"], parseInt(qtyInput.value), "sell");
+              };
+
+              list.appendChild(card);
             });
           }
         })
         .catch(err => {
           console.error(err);
-          equityList.innerHTML = "<p>Error loading equities.</p>";
+          list.innerHTML = "<p style='color:white;'>Error loading equities.</p>";
         });
     });
 
-    function tradeEquity(eqName, action) {
-      const qtyInput = document.getElementById("qty-" + eqName);
-      const qty = Number(qtyInput.value);
+    function buySellEquity(name, qty, action) {
+      const userId = localStorage.getItem("userId");
       if (!qty || qty <= 0) {
-        alert("Enter valid quantity");
+        alert("Enter a valid quantity");
         return;
       }
-
-      const payload = {
-        type: "equity",
-        id: localStorage.getItem("userId"),
-        equity: eqName,
-        qty: qty,
-        action: action
-      };
 
       fetch(webAppUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          action: "tradeEquity",
+          user: userId,
+          equity: name,
+          quantity: qty,
+          tradeType: action
+        })
       })
       .then(res => res.json())
       .then(resp => {
-        if (resp.status === "error") {
-          alert(resp.message);
+        if (resp.status === "success") {
+          alert(`${action.toUpperCase()} successful!`);
+          window.location.reload();
         } else {
-          alert(`Equity ${action} successful`);
-          location.reload();
+          alert("❌ " + resp.message);
         }
-      });
+      })
+      .catch(err => alert("Error: " + err));
     }
   </script>
 </body>
