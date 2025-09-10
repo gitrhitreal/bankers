@@ -1,67 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Equity Trading</title>
+  <meta charset="UTF-8">
+  <title>Equities</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f7fa; margin:0; padding:20px; }
-    .container { max-width:1000px; margin:auto; }
-    .card { background:#fff; padding:20px; margin:15px 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-    .card h2 { margin-top:0; font-size:20px; color:#333; }
-    .card p { margin:5px 0; color:#555; }
-    button { border:none; padding:8px 14px; border-radius:6px; cursor:pointer; margin-top:10px; margin-right:8px; }
-    .buy { background:#4CAF50; color:#fff; }
-    .buy:hover { background:#45a049; }
-    .sell { background:#e53935; color:#fff; }
-    .sell:hover { background:#c62828; }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    .card {
+      background: white; padding: 20px; margin: 10px 0;
+      border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    button {
+      margin: 5px; padding: 8px 14px;
+      border: none; border-radius: 4px; cursor: pointer;
+    }
+    .buy { background: #007bff; color: white; }
+    .buy:hover { background: #0069d9; }
+    .sell { background: #dc3545; color: white; }
+    .sell:hover { background: #c82333; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Equity Trading</h1>
-    <div id="equities"></div>
-  </div>
+  <h2>Available Equities</h2>
+  <div id="equities"></div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
-    const currentUser = "Axis Bank"; // example bank
+    const userBank = localStorage.getItem("bank") || "Axis Bank"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
 
-    async function loadEquities() {
-      const res = await fetch(webAppUrl + "?action=getEquities");
-      const equities = await res.json();
+    async function fetchEquities() {
+      const res = await fetch(`${API_URL}?action=getEquities`);
+      const data = await res.json();
       const container = document.getElementById("equities");
       container.innerHTML = "";
-      equities.forEach(eq => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <h2>${eq["Equity Name"]}</h2>
+      data.forEach(eq => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <h3>${eq["Equity Name"]}</h3>
           <p><b>Price:</b> ${eq["Current Price"]}</p>
-          <p><b>Quantity:</b> ${eq.Quantity}</p>
-          <button class="buy" onclick="tradeEquity('${eq["Equity Name"]}', 1, ${eq['Current Price']})">Buy</button>
-          <button class="sell" onclick="tradeEquity('${eq["Equity Name"]}', -1, ${eq['Current Price']})">Sell</button>
+          <button class="buy" onclick="tradeEquity('${eq["Equity Name"]}', ${eq["Current Price"]}, 'buy')">Buy</button>
+          <button class="sell" onclick="tradeEquity('${eq["Equity Name"]}', ${eq["Current Price"]}, 'sell')">Sell</button>
         `;
-        container.appendChild(card);
+        container.appendChild(div);
       });
     }
 
-    function tradeEquity(equity, qty, price) {
-      fetch(webAppUrl, {
+    async function tradeEquity(name, price, type) {
+      const qty = parseInt(prompt(`Enter quantity to ${type}:`), 10);
+      if (!qty || qty <= 0) return;
+      const res = await fetch(API_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action:"tradeEquity",
-          user: currentUser,
-          equity,
-          quantity: qty,
-          currentPrice: price
+          action: "tradeEquity", user: userBank,
+          equity: name, currentPrice: price,
+          quantity: qty, tradeType: type
         })
       });
-      alert((qty>0 ? "Bought " : "Sold ") + equity);
-      setTimeout(loadEquities, 500);
+      const result = await res.json();
+      if (result.status === "success") {
+        alert(`✅ Equity ${type} successful!`);
+        fetchEquities();
+      } else {
+        alert("❌ Error: " + result.message);
+      }
     }
 
-    loadEquities();
+    fetchEquities();
   </script>
 </body>
 </html>
