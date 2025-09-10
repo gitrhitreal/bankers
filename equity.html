@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Equity Selection</title>
   <style>
     body {
@@ -97,7 +96,7 @@
       const userId = localStorage.getItem("userId");
       const list = document.getElementById("equityList");
 
-      fetch(webAppUrl + "?action=getEquities&user=" + encodeURIComponent(userId))
+      fetch(webAppUrl + "?action=getEquities")
         .then(res => res.json())
         .then(equities => {
           list.innerHTML = "";
@@ -111,8 +110,7 @@
               card.innerHTML = `
                 <div class="title">${eq["Equity Name"]}</div>
                 <div class="details">Current Price: ${eq["Current Price"]}</div>
-                <div class="details">Risk: ${eq["Risk Probability"]}</div>
-                <div class="details">Your Holdings: ${eq["Your Holdings"] || 0}</div>
+                <div class="details">Risk: ${eq["Risk"]}</div>
                 <input class="qty-input" type="number" min="1" value="1">
                 <button class="action-btn buy-btn">Buy</button>
                 <button class="action-btn sell-btn">Sell</button>
@@ -120,10 +118,10 @@
 
               const qtyInput = card.querySelector(".qty-input");
               card.querySelector(".buy-btn").onclick = () => {
-                tradeEquity(eq["Equity Name"], parseInt(qtyInput.value), "buy");
+                tradeEquity(eq["Equity Name"], parseInt(qtyInput.value), "buy", eq["Current Price"]);
               };
               card.querySelector(".sell-btn").onclick = () => {
-                tradeEquity(eq["Equity Name"], parseInt(qtyInput.value), "sell");
+                tradeEquity(eq["Equity Name"], parseInt(qtyInput.value), "sell", eq["Current Price"]);
               };
 
               list.appendChild(card);
@@ -136,7 +134,7 @@
         });
     });
 
-    function tradeEquity(name, qty, action) {
+    function tradeEquity(name, qty, action, price) {
       const userId = localStorage.getItem("userId");
       if (!qty || qty <= 0) {
         alert("Enter a valid quantity");
@@ -151,7 +149,8 @@
           user: userId,
           equity: name,
           quantity: qty,
-          tradeType: action
+          tradeType: action,
+          currentPrice: price
         })
       })
       .then(res => res.json())
