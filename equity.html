@@ -91,7 +91,7 @@
   <div id="equityList">Loading equities...</div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // replace
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
 
     document.addEventListener("DOMContentLoaded", function() {
       const userId = localStorage.getItem("userId");
@@ -111,7 +111,6 @@
               card.innerHTML = `
                 <div class="title">${eq["Equity Name"]}</div>
                 <div class="details">Current Price: ${eq["Current Price"]}</div>
-                <div class="details">Future Value: ${eq["Future Value"]}</div>
                 <div class="details">Risk: ${eq["Risk Probability"]}</div>
                 <div class="details">Your Holdings: ${eq["Your Holdings"] || 0}</div>
                 <input class="qty-input" type="number" min="1" value="1">
