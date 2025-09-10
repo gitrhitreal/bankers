@@ -1,59 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Loan Approvals</title>
+  <meta charset="UTF-8">
+  <title>Loans</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f7fa; margin:0; padding:20px; }
-    .container { max-width:1000px; margin:auto; }
-    .card { background:#fff; padding:20px; margin:15px 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-    .card h2 { margin-top:0; font-size:20px; color:#333; }
-    .card p { margin:5px 0; color:#555; }
-    button { background:#4CAF50; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; margin-top:10px; }
-    button:hover { background:#45a049; }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    .loan-card {
+      background: white; padding: 20px; margin: 10px 0;
+      border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    button {
+      background: #28a745; color: white; padding: 8px 14px;
+      border: none; border-radius: 4px; cursor: pointer;
+    }
+    button:hover { background: #218838; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Pending Loan Approvals</h1>
-    <div id="loans"></div>
-  </div>
+  <h2>Pending Loans</h2>
+  <div id="loans"></div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
+    const userBank = localStorage.getItem("bank") || "Axis Bank"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
 
-    async function loadLoans() {
-      const res = await fetch(webAppUrl + "?action=getLoans");
-      const loans = await res.json();
+    async function fetchLoans() {
+      const res = await fetch(`${API_URL}?action=getLoans&bank=${encodeURIComponent(userBank)}`);
+      const data = await res.json();
       const container = document.getElementById("loans");
       container.innerHTML = "";
-      loans.forEach(loan => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <h2>${loan["Loan Name"]}</h2>
+      data.forEach(loan => {
+        const div = document.createElement("div");
+        div.className = "loan-card";
+        div.innerHTML = `
+          <h3>${loan["Loan Name"]}</h3>
           <p><b>Bank:</b> ${loan.Bank}</p>
           <p><b>Amount:</b> ${loan.Amount}</p>
           <p><b>Tenure:</b> ${loan.Tenure}</p>
           <p><b>Interest:</b> ${loan.Interest}</p>
-          <p><b>Status:</b> ${loan.Status}</p>
           <button onclick="approveLoan('${loan["Loan Name"]}','${loan.Bank}')">Approve</button>
         `;
-        container.appendChild(card);
+        container.appendChild(div);
       });
     }
 
-    function approveLoan(loan, bank) {
-      fetch(webAppUrl, {
+    async function approveLoan(loanName, bank) {
+      const res = await fetch(API_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action:"approveLoan", loan, bank })
+        body: JSON.stringify({ action: "approveLoan", loan: loanName, bank })
       });
-      alert("Loan Approved!");
-      setTimeout(loadLoans, 500);
+      const result = await res.json();
+      if (result.status === "success") {
+        alert("✅ Loan approved successfully!");
+        fetchLoans();
+      } else {
+        alert("❌ Error approving loan: " + result.message);
+      }
     }
 
-    loadLoans();
+    fetchLoans();
   </script>
 </body>
 </html>
