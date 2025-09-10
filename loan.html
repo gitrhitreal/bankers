@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Loan Selection</title>
   <style>
     body {
@@ -75,7 +74,6 @@
 </head>
 <body>
   <header>Available Loan Portfolios</header>
-
   <div id="loanList">Loading loans...</div>
 
   <script>
@@ -124,17 +122,17 @@
       fetch(webAppUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           action: "approveLoan",
-          id: loginId, 
-          bank: bank, 
-          loan: loanType 
+          id: loginId,
+          bank: bank,
+          loan: loanType
         })
       })
       .then(res => res.json())
       .then(resp => {
         if (resp.status === "success") {
-          alert(`Loan "${loanType}" approved!`);
+          alert(`Loan "${resp.loan}" approved for ${resp.bank}!`);
           window.location.href = "dashboard.html";
         } else {
           alert("❌ " + resp.message);
