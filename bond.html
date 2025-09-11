@@ -98,7 +98,7 @@
               <div class="bond-details">Price: ${bond["Current Price"]}</div>
               <div class="bond-details">Yield: ${bond.Yield}</div>
               <div class="bond-details">Maturity: ${bond.Maturity}</div>
-              <button class="approve-btn">Approve</button>
+              <button class="approve-btn">Purchase</button>
               `;
 
               card.querySelector(".approve-btn").onclick = () => approveBond(bond["Bond Name"], bond.Bank);
@@ -120,7 +120,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "approveBond", id: userId, bank: bank, bond: bondName })
       });
-      alert(`Bond "${bondName}" approved!`);
+      alert(`Bond "${bondName}" purchased!`);
       window.location.href = "dashboard.html";
     }
   </script>
