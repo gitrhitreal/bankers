@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bond Selection</title>
   <style>
     body {
@@ -34,7 +33,7 @@
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 20px;
     }
-    .card {
+    .bond-card {
       background: white;
       border-radius: 12px;
       padding: 20px;
@@ -43,38 +42,33 @@
       transition: transform 0.2s, box-shadow 0.2s;
       cursor: pointer;
     }
-    .card:hover {
+    .bond-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 6px 14px rgba(0,0,0,0.25);
     }
-    .title {
+    .bond-title {
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 10px;
       color: #333;
     }
-    .details {
+    .bond-details {
       font-size: 14px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       color: #555;
     }
     .approve-btn {
-      display: block;
-      width: 100%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 10px 15px;
       border: none;
+      background: #5563DE;
       color: white;
-      padding: 14px;
-      margin: 10px 0;
-      border-radius: 10px;
+      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      transition: transform 0.2s, background 0.3s;
+      transition: background 0.2s;
     }
     .approve-btn:hover {
-      transform: scale(1.05);
-      background: linear-gradient(135deg, #764ba2, #667eea);
+      background: #3340b8;
     }
   </style>
 </head>
@@ -86,55 +80,59 @@
     const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // replace
 
     document.addEventListener("DOMContentLoaded", function() {
-      const userId = localStorage.getItem("userId");
-      const list = document.getElementById("bondList");
+      const bankName = localStorage.getItem("bankName");
+      const bondList = document.getElementById("bondList");
 
       fetch(webAppUrl + "?action=getBonds")
         .then(res => res.json())
         .then(bonds => {
-          list.innerHTML = "";
-          if (!bonds || bonds.length === 0) {
-            list.innerHTML = "<p style='color:white;'>No bonds available.</p>";
+          const filtered = bonds.filter(b => b.Bank === bankName && b.Status === "Pending");
+          bondList.innerHTML = "";
+
+          if (filtered.length === 0) {
+            bondList.innerHTML = "<p style='color:white;'>No bonds available for your bank.</p>";
           } else {
-            bonds.forEach(bond => {
+            filtered.forEach(bond => {
               const card = document.createElement("div");
-              card.className = "card";
+              card.className = "bond-card";
 
               card.innerHTML = `
-                <div class="title">${bond["Bond Name"]}</div>
-                <div class="details">Current Price: ${bond["Current Price"]}</div>
-                <div class="details">Yield: ${bond["Yield"]}</div>
-                <div class="details">Maturity: ${bond["Maturity"]}</div>
-                <button class="approve-btn">Buy</button>
+                <div class="bond-title">${bond["Bond Name"]}</div>
+                <div class="bond-details">Price: ${bond["Current Price"]}</div>
+                <div class="bond-details">Yield: ${bond["Yield"]}</div>
+                <div class="bond-details">Maturity: ${bond["Maturity"]}</div>
+                <button class="approve-btn">Approve</button>
               `;
 
-              card.querySelector(".approve-btn").onclick = () => buyBond(bond["Bond Name"]);
-              list.appendChild(card);
+              card.querySelector(".approve-btn").onclick = () => approveBond(bond["Bond Name"]);
+              bondList.appendChild(card);
             });
           }
         })
         .catch(err => {
           console.error(err);
-          list.innerHTML = "<p style='color:white;'>Error loading bonds.</p>";
+          bondList.innerHTML = "<p style='color:white;'>Error loading bonds.</p>";
         });
     });
 
-    function buyBond(name) {
-      const userId = localStorage.getItem("userId");
+    function approveBond(bondName) {
+      const loginId = localStorage.getItem("userId");
+      const bank = localStorage.getItem("bankName");
 
       fetch(webAppUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "buyBond",
-          user: userId,
-          bond: name
+          action: "approveBond",
+          id: loginId,
+          bank: bank,
+          bond: bondName
         })
       })
       .then(res => res.json())
       .then(resp => {
         if (resp.status === "success") {
-          alert("✅ Bond purchased!");
+          alert(`Bond "${bondName}" approved!`);
           window.location.reload();
         } else {
           alert("❌ " + resp.message);
