@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bank Balances</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      background: rgba(255,255,255,0.15);
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+      font-size: 26px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    table {
+      margin: 40px auto;
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 800px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+    th, td {
+      padding: 14px;
+      text-align: center;
+    }
+    th {
+      background: #5563DE;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <header>Bank Balances</header>
+  <table id="balanceTable">
+    <thead>
+      <tr>
+        <th>Bank Name</th>
+        <th>Balance</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="3">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
+
+    document.addEventListener("DOMContentLoaded", function() {
+      fetch(webAppUrl + "?action=getBalances")
+        .then(res => res.json())
+        .then(balances => {
+          const tbody = document.querySelector("#balanceTable tbody");
+          tbody.innerHTML = "";
+          if (balances.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='3'>No balance data available</td></tr>";
+          } else {
+            balances.forEach(row => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${row["Bank Name"]}</td>
+                <td>${row["Balance"]}</td>
+                <td>${row["Last Updated"]}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          document.querySelector("#balanceTable tbody").innerHTML = "<tr><td colspan='3'>Error loading balances</td></tr>";
+        });
+    });
+  </script>
+</body>
+</html>
