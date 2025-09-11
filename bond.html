@@ -1,145 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Bond Selection</title>
+  <meta charset="utf-8" />
+  <title>Bonds</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #74ABE2, #5563DE);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
+    :root{
+      --bg1:#74ABE2; --bg2:#5563DE;
+      --card:#ffffff; --muted:#565a6c;
+      --btn-bg: #5563DE; --btn-hover:#3340b8;
     }
-    header {
-      background: rgba(255,255,255,0.15);
-      width: 100%;
-      padding: 20px;
-      text-align: center;
-      color: #fff;
-      font-size: 24px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    body{
+      margin:0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:28px 16px;
+      color:#222;
     }
-    #bondList {
-      margin: 40px auto;
-      width: 90%;
-      max-width: 800px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
+    header{
+      width:100%;
+      max-width:1100px;
+      margin-bottom:18px;
+      background: rgba(255,255,255,0.12);
+      padding:20px;
+      border-radius:12px;
+      color:#fff;
+      text-align:center;
+      font-size:22px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.18);
     }
-    .bond-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-      cursor: pointer;
+    #bondList{
+      width:100%;
+      max-width:1100px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:18px;
     }
-    .bond-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+    .bond-card{
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      transition: transform .16s ease, box-shadow .16s ease;
     }
-    .bond-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #333;
+    .bond-card:hover{ transform:translateY(-6px); box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
+    .bond-title{ font-size:18px; font-weight:700; margin-bottom:8px; color:#222; }
+    .bond-details{ color:var(--muted); font-size:14px; margin:6px 0; }
+    .btn-row{ margin-top:12px; display:flex; gap:8px; justify-content:center; }
+    .approve-btn{
+      padding:10px 12px; border-radius:10px; border:0; cursor:pointer; color:#fff;
+      background:linear-gradient(135deg,var(--btn-bg),#764ba2); font-weight:700;
+      transition: transform .12s ease, filter .12s ease;
     }
-    .bond-details {
-      font-size: 14px;
-      margin-bottom: 10px;
-      color: #555;
-    }
-    .approve-btn {
-      padding: 10px 15px;
-      border: none;
-      background: #5563DE;
-      color: white;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .approve-btn:hover {
-      background: #3340b8;
-    }
+    .approve-btn:hover{ transform:scale(1.03); filter:brightness(.96); }
+    .small { font-size:13px; color:#666; text-align:center; margin-top:8px; }
   </style>
 </head>
 <body>
   <header>Available Bonds</header>
+
   <div id="bondList">Loading bonds...</div>
+  <div class="small">Click Buy to purchase — you will get a confirmation. (Purchases are logged to your Google Sheet.)</div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // replace
+    // ← REPLACE this with your real Apps Script /exec URL
+    const WEBAPP = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
 
-    document.addEventListener("DOMContentLoaded", function() {
-      const bankName = localStorage.getItem("bankName");
-      const bondList = document.getElementById("bondList");
+    // helper: read bank name from localStorage (set at login)
+    const BANK = localStorage.getItem("bankName") || localStorage.getItem("userId") || "";
 
-      fetch(webAppUrl + "?action=getBonds")
-        .then(res => res.json())
-        .then(bonds => {
-          const filtered = bonds.filter(b => b.Bank === bankName && b.Status === "Pending");
-          bondList.innerHTML = "";
-
-          if (filtered.length === 0) {
-            bondList.innerHTML = "<p style='color:white;'>No bonds available for your bank.</p>";
-          } else {
-            filtered.forEach(bond => {
-              const card = document.createElement("div");
-              card.className = "bond-card";
-
-              card.innerHTML = `
-                <div class="bond-title">${bond["Bond Name"]}</div>
-                <div class="bond-details">Price: ${bond["Current Price"]}</div>
-                <div class="bond-details">Yield: ${bond["Yield"]}</div>
-                <div class="bond-details">Maturity: ${bond["Maturity"]}</div>
-                <button class="approve-btn">Approve</button>
-              `;
-
-              card.querySelector(".approve-btn").onclick = () => approveBond(bond["Bond Name"]);
-              bondList.appendChild(card);
-            });
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          bondList.innerHTML = "<p style='color:white;'>Error loading bonds.</p>";
+    // load bonds from Bond_Portfolios (Apps Script doGet?action=getBonds should return objects with Bond Name, Current Price, Yield, Maturity, Bank, Status)
+    async function loadBonds(){
+      const list = document.getElementById("bondList");
+      list.innerHTML = '<p style="color:#fff; grid-column:1/-1; text-align:center">Loading…</p>';
+      try {
+        const res = await fetch(WEBAPP + "?action=getBonds");
+        const data = await res.json();
+        // filter for bank and pending
+        const visible = (Array.isArray(data) ? data : []).filter(b => {
+          if (!b) return false;
+          // Accept if Bank matches or if Bond_Portfolios is global (no Bank column)
+          if (b.Bank && BANK) return String(b.Bank).trim() === String(BANK).trim() && (b.Status === "Pending" || !b.Status);
+          // fallback: show pending only
+          return (b.Status === "Pending" || !b.Status);
         });
-    });
 
-    function approveBond(bondName) {
-      const loginId = localStorage.getItem("userId");
-      const bank = localStorage.getItem("bankName");
-
-      fetch(webAppUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "approveBond",
-          id: loginId,
-          bank: bank,
-          bond: bondName
-        })
-      })
-      .then(res => res.json())
-      .then(resp => {
-        if (resp.status === "success") {
-          alert(`Bond "${bondName}" approved!`);
-          window.location.reload();
-        } else {
-          alert("❌ " + resp.message);
+        if (!visible.length){
+          list.innerHTML = '<p style="color:#fff; grid-column:1/-1; text-align:center">No bonds available.</p>';
+          return;
         }
-      })
-      .catch(err => alert("Error: " + err));
+
+        list.innerHTML = "";
+        visible.forEach(bond=>{
+          const card = document.createElement("div");
+          card.className = "bond-card";
+          const price = bond["Current Price"] ?? bond["Price"] ?? "";
+          const yieldVal = bond["Yield"] ?? bond["Yield (%)"] ?? bond["Yield%"] ?? "";
+          const maturity = bond["Maturity"] ?? bond["Maturity Date"] ?? "";
+
+          card.innerHTML = `
+            <div class="bond-title">${escapeHtml(bond["Bond Name"] ?? bond["Name"] ?? "Unnamed")}</div>
+            <div class="bond-details"><strong>Price:</strong> ${escapeHtml(String(price))}</div>
+            <div class="bond-details"><strong>Yield:</strong> ${escapeHtml(String(yieldVal))}</div>
+            <div class="bond-details"><strong>Maturity:</strong> ${escapeHtml(String(maturity))}</div>
+            <div class="btn-row">
+              <button class="approve-btn">Buy</button>
+            </div>
+          `;
+          // Buy handler — uses no-cors to avoid preflight CORS blocking
+          card.querySelector(".approve-btn").addEventListener("click", ()=>{
+            buyBond(String(bond["Bond Name"] || bond["Name"]), price);
+          });
+          list.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Failed loading bonds:", err);
+        list.innerHTML = '<p style="color:#fff; grid-column:1/-1; text-align:center">Error loading bonds.</p>';
+      }
     }
+
+    // send purchase — note: using mode: "no-cors" — server side will still get this POST
+    function buyBond(bondName, currentPrice){
+      const qty = prompt(`Enter quantity to buy for "${bondName}":`, "1");
+      if (!qty) return;
+      // Construct payload
+      const payload = {
+        action: "buyBond",
+        user: BANK || localStorage.getItem("userId") || "",
+        bond: bondName,
+        currentPrice: currentPrice || "",
+        quantity: qty
+      };
+
+      // POST silently using no-cors to avoid the CORS preflight error from blocking the request.
+      fetch(WEBAPP, {
+        method: "POST",
+        mode: "no-cors",            // << important: prevents CORS preflight blocking in browser
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      // We cannot read the response due to no-cors; show local confirmation & refresh
+      alert(`✅ Purchase sent for ${qty} × ${bondName}`);
+      // small delay to allow Apps Script to write; user can also refresh manually
+      setTimeout(()=> location.reload(), 700);
+    }
+
+    // small utility to avoid injection in text nodes
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // bootstrap
+    loadBonds();
   </script>
 </body>
 </html>
