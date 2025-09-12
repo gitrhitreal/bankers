@@ -98,31 +98,38 @@
         });
     });
 
-    function tradeEquity(bank, name, type, price) {
-      const qty = prompt(`Enter quantity to ${type}:`);
-      if (!qty || isNaN(qty)) return alert("Invalid quantity!");
+function tradeEquity(name, price, type) {
+  const qty = prompt(`Enter quantity to ${type}:`);
+  if (!qty || isNaN(qty)) return alert("Invalid quantity!");
+  const userId = localStorage.getItem("bankName");
 
-      fetch(webAppUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "tradeEquity",
-          bank: bank,
-          equity: name,
-          tradeType: type,
-          quantity: qty,
-          currentPrice: price
-        })
-      })
-      .then(res => res.json())
-      .then(resp => {
-        if (resp.success) {
-          alert(`${type} order placed for ${qty} of ${name}`);
-          window.location.reload();
-        } else {
-          alert("Error placing order");
-        }
-      })
+  fetch(webAppUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "tradeEquity",
+      bank: userId,
+      equity: name,
+      currentPrice: price,
+      quantity: qty,
+      tradeType: type
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(`${type} order placed for ${qty} of ${name}`);
+      window.location.href = "dashboard.html";
+    } else {
+      alert("Error placing trade: " + data.message);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Error placing trade");
+  });
+}
+
       .catch(err => {
         console.error("Trade error", err);
         alert("Error placing trade.");
