@@ -1,47 +1,47 @@
-<div class="background"></div>
-<div class="content">
-  <a href="https://gitrhitreal.github.io/equity-market/" class="equity-link">Access Equity Market</a>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Equity Access</title>
+  <style>
+    body {
+      margin: 0; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      font-family: Arial, sans-serif; overflow: hidden;
+    }
+    .background {
+      position: absolute; width: 100%; height: 100%;
+      background: url(Stock.jpg) no-repeat center center/cover;
+      filter: blur(8px); z-index: -1;
+    }
+    .content { z-index: 1; text-align: center; }
+    .equity-link {
+      display: inline-block; padding: 20px 40px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px; text-decoration: none; color: #333;
+      font-size: 24px; font-weight: bold; transition: 0.3s;
+    }
+    .equity-link:hover {
+      background: #fff; transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+  <div class="content">
+    <a id="equityLink" class="equity-link">Access Equity Market</a>
+  </div>
 
-<style>
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-  }
-
-  .background {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: url(Stock.jpg) no-repeat center center/cover;
-    filter: blur(8px);   /* 🔹 this applies the blur */
-    z-index: -1;         /* keep it behind content */
-  }
-
-  .content {
-    z-index: 1;
-    text-align: center;
-  }
-
-  .equity-link {
-    display: inline-block;
-    padding: 20px 40px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 12px;
-    text-decoration: none;
-    color: #333;
-    font-size: 24px;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-
-  .equity-link:hover {
-    background: rgba(255, 255, 255, 1);
-    transform: scale(1.05);
-  }
-</style>
+  <script>
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      // Redirect to your GitHub Equity Market site with bankCode
+      document.getElementById("equityLink").href =
+        "https://yourusername.github.io/equity-market/?bankCode=" + userId;
+    } else {
+      document.getElementById("equityLink").href = "index.html";
+      document.querySelector(".equity-link").innerText = "Please Log In";
+    }
+  </script>
+</body>
+</html>
