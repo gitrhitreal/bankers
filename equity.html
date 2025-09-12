@@ -37,11 +37,6 @@
       padding: 20px;
       box-shadow: 0 6px 15px rgba(0,0,0,0.2);
       text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .equity-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     }
     .equity-title {
       font-size: 20px;
@@ -62,12 +57,9 @@
       color: #fff;
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s ease;
     }
     .buy { background: linear-gradient(135deg, #43e97b, #38f9d7); }
-    .buy:hover { background: linear-gradient(135deg, #38f9d7, #43e97b); transform: scale(1.05); }
     .sell { background: linear-gradient(135deg, #ff6a6a, #d64545); }
-    .sell:hover { background: linear-gradient(135deg, #d64545, #ff6a6a); transform: scale(1.05); }
   </style>
 </head>
 <body>
@@ -78,68 +70,62 @@
     const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
 
     document.addEventListener("DOMContentLoaded", function() {
+      const bankName = localStorage.getItem("bankName"); // from login
       const equityList = document.getElementById("equityList");
-      const bankName = localStorage.getItem("bankName"); // ✅ bank must be passed
 
       fetch(`${webAppUrl}?action=getEquities&bank=${encodeURIComponent(bankName)}`)
         .then(res => res.json())
         .then(equities => {
           equityList.innerHTML = "";
-          if (equities.length === 0) {
-            equityList.innerHTML = "<p style='color:white;'>No equities available.</p>";
-            return;
-          }
-
           equities.forEach(eq => {
             const card = document.createElement("div");
             card.className = "equity-card";
             card.innerHTML = `
               <div class="equity-title">${eq["Equity Name"]}</div>
               <div class="equity-details">Price: ${eq["Current Price"]}</div>
+              <div class="equity-details">Quantity Held: ${eq["Quantity Held"]}</div>
               <button class="action-btn buy">Buy</button>
               <button class="action-btn sell">Sell</button>
             `;
-            card.querySelector(".buy").onclick = () => tradeEquity(eq["Equity Name"], eq["Current Price"], "Buy");
-            card.querySelector(".sell").onclick = () => tradeEquity(eq["Equity Name"], eq["Current Price"], "Sell");
+            card.querySelector(".buy").onclick = () => tradeEquity(bankName, eq["Equity Name"], "Buy", eq["Current Price"]);
+            card.querySelector(".sell").onclick = () => tradeEquity(bankName, eq["Equity Name"], "Sell", eq["Current Price"]);
             equityList.appendChild(card);
           });
         })
         .catch(err => {
-          console.error("❌ Error fetching equities:", err);
+          console.error(err);
           equityList.innerHTML = "<p style='color:white;'>Error loading equities.</p>";
         });
     });
 
-    function tradeEquity(name, price, type) {
+    function tradeEquity(bank, name, type, price) {
       const qty = prompt(`Enter quantity to ${type}:`);
       if (!qty || isNaN(qty)) return alert("Invalid quantity!");
-
-      const bankName = localStorage.getItem("bankName");
 
       fetch(webAppUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "tradeEquity",
-          user: bankName,
+          bank: bank,
           equity: name,
-          currentPrice: price,
+          tradeType: type,
           quantity: qty,
-          tradeType: type
+          currentPrice: price
         })
       })
       .then(res => res.json())
-      .then(r => {
-        if (r.success) {
+      .then(resp => {
+        if (resp.success) {
           alert(`${type} order placed for ${qty} of ${name}`);
-          window.location.href = "dashboard.html";
+          window.location.reload();
         } else {
-          alert("Error placing trade");
+          alert("Error placing order");
         }
       })
       .catch(err => {
-        console.error("❌ Trade error:", err);
-        alert("Error placing trade: " + err);
+        console.error("Trade error", err);
+        alert("Error placing trade.");
       });
     }
   </script>
