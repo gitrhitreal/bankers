@@ -125,36 +125,34 @@
         });
     });
 
-    function tradeEquity(equityName, price, tradeType) {
-      const bankName = localStorage.getItem("bankName");
-      const quantity = prompt("Enter quantity to " + tradeType + ":");
-      if (!quantity || isNaN(quantity)) return;
+    function tradeEquity(equity, price, quantity, tradeType) {
+  const bankName = localStorage.getItem("bankName");
 
-      fetch(webAppUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "tradeEquity",
-          equity: equityName,
-          bank: bankName,
-          price: price,
-          quantity: quantity,
-          tradeType: tradeType
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert(`Equity "${equityName}" ${tradeType} order placed!`);
-          location.reload();
-        } else {
-          alert("Error: " + data.message);
-        }
-      })
-      .catch(err => {
-        alert("Error while trading equity: " + err.message);
-      });
+  fetch(webAppUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "tradeEquity",
+      bank: bankName,
+      equity: equity,
+      price: price,
+      quantity: quantity,
+      tradeType: tradeType
+    })
+  })
+  .then(res => res.json())
+  .then(result => {
+    if (result.success) {
+      alert(`Equity "${equity}" ${tradeType} request placed!`);
+    } else {
+      alert("Error: " + result.message);
     }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Network/Fetch error: " + err.message);
+  });
+}
   </script>
 </body>
 </html>
