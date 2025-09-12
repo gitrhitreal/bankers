@@ -119,7 +119,7 @@
       const userId = localStorage.getItem("userId");
       fetch(webAppUrl, {
         method: "POST",
-        
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "approveLoan", id: userId, bank: bank, loan: loanType })
       });
@@ -129,6 +129,7 @@
   </script>
 </body>
 </html>
+
 
 
 
