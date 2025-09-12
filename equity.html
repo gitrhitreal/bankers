@@ -75,36 +75,33 @@
   <div id="equityList">Loading equities...</div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
-    const bankName = localStorage.getItem("bankName"); // stored on login
+    const webAppUrl = "YOUR_DEPLOYED_WEB_APP_URL/exec";
 
     document.addEventListener("DOMContentLoaded", function() {
+      const bank = localStorage.getItem("bankName");
       const equityList = document.getElementById("equityList");
 
-      // ✅ include bank in the request
-      fetch(`${webAppUrl}?action=getEquities&bank=${encodeURIComponent(bankName)}`)
+      fetch(webAppUrl + "?action=getEquities&bank=" + encodeURIComponent(bank))
         .then(res => res.json())
         .then(equities => {
           equityList.innerHTML = "";
           if (equities.length === 0) {
-            equityList.innerHTML = "<p style='color:white;'>No equities found.</p>";
-            return;
+            equityList.innerHTML = "<p style='color:white;'>No equities available.</p>";
+          } else {
+            equities.forEach(eq => {
+              const card = document.createElement("div");
+              card.className = "equity-card";
+              card.innerHTML = `
+                <div class="equity-title">${eq["Equity Name"]}</div>
+                <div class="equity-details">Price: ${eq["Current Price"]}</div>
+                <button class="action-btn buy">Buy</button>
+                <button class="action-btn sell">Sell</button>
+              `;
+              card.querySelector(".buy").onclick = () => tradeEquity(eq["Equity Name"], "Buy");
+              card.querySelector(".sell").onclick = () => tradeEquity(eq["Equity Name"], "Sell");
+              equityList.appendChild(card);
+            });
           }
-
-          equities.forEach(eq => {
-            const card = document.createElement("div");
-            card.className = "equity-card";
-            card.innerHTML = `
-              <div class="equity-title">${eq["Equity Name"]}</div>
-              <div class="equity-details">Price: ${eq["Current Price"]}</div>
-              <div class="equity-details">Quantity: ${eq["Quantity"] || 0}</div>
-              <button class="action-btn buy">Buy</button>
-              <button class="action-btn sell">Sell</button>
-            `;
-            card.querySelector(".buy").onclick = () => tradeEquity(eq["Equity Name"], eq["Current Price"], "buy");
-            card.querySelector(".sell").onclick = () => tradeEquity(eq["Equity Name"], eq["Current Price"], "sell");
-            equityList.appendChild(card);
-          });
         })
         .catch(err => {
           console.error(err);
@@ -112,28 +109,35 @@
         });
     });
 
-    function tradeEquity(name, price, type) {
-      const qty = parseInt(prompt(`Enter quantity to ${type}:`), 10);
+    function tradeEquity(name, type) {
+      const qty = prompt(`Enter quantity to ${type}:`);
       if (!qty || isNaN(qty)) return alert("Invalid quantity!");
+      const bank = localStorage.getItem("bankName");
 
       fetch(webAppUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "tradeEquity",
-          bank: bankName,
+          bank: bank,
           equity: name,
-          currentPrice: price,
           quantity: qty,
           type: type
         })
       })
-      .then(res => res.json())
-      .then(() => {
-        alert(`${type.toUpperCase()} order placed for ${qty} of ${name}`);
-        location.reload();
-      })
-      .catch(err => alert("Error placing trade: " + err));
+        .then(res => res.json())
+        .then(resp => {
+          if (resp.success) {
+            alert(`${type} order placed for ${qty} of ${name}`);
+            window.location.href = "dashboard.html";
+          } else {
+            alert("Error: " + resp.message);
+          }
+        })
+        .catch(err => {
+          console.error("Error placing trade:", err);
+          alert("Error placing trade");
+        });
     }
   </script>
 </body>
