@@ -2,138 +2,159 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Equity Management</title>
+  <title>Equity Trading</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
-    h1 { text-align: center; }
-    .bank-section {
-      margin-bottom: 40px; background: #fff; padding: 20px;
-      border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-    th { background: #eee; }
-    button {
-      padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer;
+    header {
+      background: rgba(255,255,255,0.15);
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+      font-size: 26px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    .buy-btn { background: #28a745; color: #fff; }
-    .sell-btn { background: #dc3545; color: #fff; }
-    .logout {
-      display: block; margin: 20px auto; padding: 10px 20px;
-      background: #ff6a6a; color: white; border-radius: 8px; border: none; cursor: pointer;
+    #equityList {
+      margin: 40px auto;
+      width: 90%;
+      max-width: 1000px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .equity-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .equity-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+    .equity-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #333;
+    }
+    .equity-details {
+      font-size: 14px;
+      margin: 6px 0;
+      color: #555;
+    }
+    .btn {
+      margin-top: 15px;
+      padding: 10px 15px;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100px;
+    }
+    .buy-btn {
+      background: linear-gradient(135deg, #43e97b, #38f9d7);
+    }
+    .buy-btn:hover {
+      background: linear-gradient(135deg, #38f9d7, #43e97b);
+      transform: scale(1.05);
+    }
+    .sell-btn {
+      background: linear-gradient(135deg, #ff6a6a, #d64545);
+    }
+    .sell-btn:hover {
+      background: linear-gradient(135deg, #d64545, #ff6a6a);
+      transform: scale(1.05);
     }
   </style>
 </head>
 <body>
-  <h1 id="bankTitle"></h1>
-
-  <!-- Equities Table -->
-  <div class="bank-section">
-    <table>
-      <thead>
-        <tr>
-          <th>Equity Name</th>
-          <th>Price</th>
-          <th>Quantity</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="equityTable"></tbody>
-    </table>
-  </div>
-
-  <button class="logout" onclick="logout()">Logout</button>
+  <header>Available Equities</header>
+  <div id="equityList">Loading equities...</div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // Replace with your Web App URL
-    const bankName = localStorage.getItem("bankName");
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec";
 
-    if (!bankName) {
-      window.location.href = "index.html"; // redirect if not logged in
-    }
+    document.addEventListener("DOMContentLoaded", function() {
+      const bankName = localStorage.getItem("bankName");
+      const equityList = document.getElementById("equityList");
 
-    document.getElementById("bankTitle").innerText = bankName + " - Equities";
+      fetch(webAppUrl + "?action=getEquities&bank=" + encodeURIComponent(bankName))
+        .then(res => res.json())
+        .then(equities => {
+          equityList.innerHTML = "";
+          if (equities.length === 0) {
+            equityList.innerHTML = "<p style='color:white;'>No equities available.</p>";
+          } else {
+            equities.forEach(eq => {
+              const card = document.createElement("div");
+              card.className = "equity-card";
+              card.innerHTML = `
+                <div class="equity-title">${eq["Equity Name"]}</div>
+                <div class="equity-details">Price: ${eq.Price}</div>
+                <div class="equity-details">Quantity: ${eq.Quantity}</div>
+                <div class="equity-details">Status: ${eq.Status}</div>
+                <button class="btn buy-btn">Buy</button>
+                <button class="btn sell-btn">Sell</button>
+              `;
 
-    // Load equities for logged-in bank
-    async function loadEquities() {
-      const table = document.getElementById("equityTable");
-      table.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
+              card.querySelector(".buy-btn").onclick = () => tradeEquity(eq["Equity Name"], eq.Price, "Buy");
+              card.querySelector(".sell-btn").onclick = () => tradeEquity(eq["Equity Name"], eq.Price, "Sell");
 
-      try {
-        const res = await fetch(`${SCRIPT_URL}?action=getEquities&bank=${encodeURIComponent(bankName)}`);
-        const equities = await res.json();
-
-        table.innerHTML = "";
-        if (equities.length === 0) {
-          table.innerHTML = "<tr><td colspan='5'>No equities available</td></tr>";
-          return;
-        }
-
-        equities.forEach(eq => {
-          const row = document.createElement("tr");
-          const safeId = eq["Equity Name"].replace(/\s/g,'_');
-          row.innerHTML = `
-            <td>${eq["Equity Name"]}</td>
-            <td>₹${eq["Price"]}</td>
-            <td><input type="number" min="1" value="1" id="qty_${safeId}"></td>
-            <td id="status_${safeId}">${eq["Status"] || "-"}</td>
-            <td>
-              <button class="buy-btn" onclick="tradeEquity('${eq["Equity Name"]}', ${eq["Price"]}, 'Buy')">Buy</button>
-              <button class="sell-btn" onclick="tradeEquity('${eq["Equity Name"]}', ${eq["Price"]}, 'Sell')">Sell</button>
-            </td>
-          `;
-          table.appendChild(row);
+              equityList.appendChild(card);
+            });
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          equityList.innerHTML = "<p style='color:white;'>Error loading equities.</p>";
         });
+    });
 
-      } catch (err) {
-        console.error(err);
-        table.innerHTML = "<tr><td colspan='5'>Error loading equities</td></tr>";
-      }
-    }
+    function tradeEquity(equityName, price, tradeType) {
+      const bankName = localStorage.getItem("bankName");
+      const quantity = prompt("Enter quantity to " + tradeType + ":");
+      if (!quantity || isNaN(quantity)) return;
 
-    // Trade Equity (Buy/Sell)
-    async function tradeEquity(equity, price, type) {
-      const safeId = equity.replace(/\s/g,'_');
-      const qty = document.getElementById(`qty_${safeId}`).value;
-      const statusId = `status_${safeId}`;
-
-      if (qty <= 0) return alert("Enter valid quantity!");
-
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "tradeEquity",
-            equity: equity,
-            bank: bankName,
-            price: price,
-            quantity: qty,
-            tradeType: type
-          })
-        });
-
-        const result = await res.json();
-        if (result.success) {
-          alert(`Equity "${equity}" ${type}ed successfully`);
-          document.getElementById(statusId).innerText = "Pending " + type;
+      fetch(webAppUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "tradeEquity",
+          equity: equityName,
+          bank: bankName,
+          price: price,
+          quantity: quantity,
+          tradeType: tradeType
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(`Equity "${equityName}" ${tradeType} order placed!`);
+          location.reload();
         } else {
-          alert("Trade failed");
+          alert("Error: " + data.message);
         }
-      } catch (err) {
-        console.error(err);
-        alert("Error while trading equity");
-      }
+      })
+      .catch(err => {
+        alert("Error while trading equity: " + err.message);
+      });
     }
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-
-    // Load on page start
-    loadEquities();
   </script>
 </body>
 </html>
