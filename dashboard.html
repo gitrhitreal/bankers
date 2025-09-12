@@ -20,11 +20,23 @@
       border-radius: 16px;
       box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
       text-align: center;
-      width: 340px;
+      width: 360px;
       max-width: 90%;
       animation: fadeIn 0.8s ease-in-out;
     }
-    h2, h3 {
+    h2 {
+      margin-bottom: 20px;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px; /* space between logo and text */
+    }
+    h2 img {
+      height: 32px;
+      width: auto;
+    }
+    h3 {
       margin-bottom: 20px;
       color: #222;
     }
@@ -60,7 +72,10 @@
 </head>
 <body>
   <div class="container">
-    <h2>Welcome, <span id="bankName"></span></h2>
+    <h2>
+      Welcome, <span id="bankName"></span>
+      <img id="bankLogo" src="" alt="Bank Logo" style="display:none;">
+    </h2>
     <h3>Select an option:</h3>
     <button onclick="goTo('loan.html')">Loan</button>
     <button onclick="goTo('equity.html')">Equity</button>
@@ -74,7 +89,34 @@
       window.location.href = "index.html";
     }
 
-    document.getElementById("bankName").innerText = localStorage.getItem("bankName");
+    const bankName = localStorage.getItem("bankName");
+    document.getElementById("bankName").innerText = bankName;
+
+    // Map bank names to logo file paths (put logos in same folder or /logos/)
+    const bankLogos = {
+      "IndusInd Bank": "logos/IndusInd.jpeg",
+      "Yes Bank": "Yes.png",
+      "IDFC FIRST Bank": "IDFC.png",
+      "Bandhan Bank": "Bandhan.jpg",
+      "IDBI Bank": "IDBI.png",
+      "UCO Bank": "logos/uco.png",
+      "Federal Bank": "logos/federal.png",
+      "State Bank of India (SBI)": "logos/sbi.png",
+      "Punjab National Bank (PNB)": "logos/pnb.png",
+      "Bank of Baroda (BoB)": "logos/bob.png",
+      "Canara Bank": "logos/canara.png",
+      "HDFC Bank": "logos/hdfc.png",
+      "ICICI Bank": "icici.png",
+      "Axis Bank": "axis.png",
+      "Kotak Mahindra Bank": "kotak.png"
+    };
+
+    // If logo exists, show it
+    if (bankLogos[bankName]) {
+      const logoEl = document.getElementById("bankLogo");
+      logoEl.src = bankLogos[bankName];
+      logoEl.style.display = "inline";
+    }
 
     function goTo(page) {
       window.location.href = page;
