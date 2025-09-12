@@ -11,15 +11,14 @@
       justify-content: center;
       align-items: center;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  height: 100vh;
-  background: url("Logo.png") no-repeat center center;
-  background-size: cover; /* 🔥 fills entire screen */
-}
 
+      /* 🔹 Full logo visible (no cropping) */
+      background: url("Logo.png") no-repeat center center;
+      background-size: 100% 100%; /* stretches to cover both width & height */
     }
 
     .container {
-      background: rgba(255, 255, 255, 0.9); /* semi-transparent for readability */
+      background: rgba(255, 255, 255, 0.9);
       padding: 30px 40px;
       border-radius: 16px;
       box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
@@ -108,9 +107,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
