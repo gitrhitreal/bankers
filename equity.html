@@ -4,134 +4,127 @@
   <meta charset="UTF-8">
   <title>Equity Management</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+    h1 { text-align: center; }
     .bank-section {
-      margin-bottom: 40px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 40px; background: #fff; padding: 20px;
+      border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background: #eee;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background: #eee; }
     button {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer;
     }
     .buy-btn { background: #28a745; color: #fff; }
     .sell-btn { background: #dc3545; color: #fff; }
-    .log-section {
-      margin-top: 50px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
   </style>
 </head>
 <body>
-
   <h1>Equity Management</h1>
 
-  <!-- Example Bank Section -->
-  <div class="bank-section" id="Equity_AxisBank">
-    <h2>Axis Bank Equities</h2>
+  <!-- Bank Dropdown -->
+  <div style="text-align:center; margin-bottom:20px;">
+    <label for="bankSelect"><b>Select Bank:</b></label>
+    <select id="bankSelect" onchange="loadEquities()">
+      <option value="">-- Choose Bank --</option>
+      <option value="Axis Bank">Axis Bank</option>
+      <option value="HDFC">HDFC</option>
+      <option value="ICICI">ICICI</option>
+      <!-- Add more banks here -->
+    </select>
+  </div>
+
+  <!-- Equities Table -->
+  <div class="bank-section" id="equitySection" style="display:none;">
+    <h2 id="bankTitle"></h2>
     <table>
       <thead>
         <tr>
-          <th>Equity</th>
+          <th>Equity Name</th>
           <th>Price</th>
           <th>Quantity</th>
           <th>Status</th>
           <th>Action</th>
         </tr>
       </thead>
-      <tbody id="axisTable">
-        <tr>
-          <td>AXIS_EQ1</td>
-          <td>₹500</td>
-          <td><input type="number" min="1" value="1" id="axisEq1Qty"></td>
-          <td id="axisEq1Status">-</td>
-          <td>
-            <button class="buy-btn" onclick="buyEquity('AXIS_EQ1','Axis Bank',500,'axisEq1Qty','axisEq1Status')">Buy</button>
-            <button class="sell-btn" onclick="sellEquity('AXIS_EQ1','Axis Bank',500,'axisEq1Qty','axisEq1Status')">Sell</button>
-          </td>
-        </tr>
-        <!-- Add more equities here -->
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Log Section -->
-  <div class="log-section">
-    <h2>Equity_Portfolios</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Equity Name</th>
-          <th>Bank Name</th>
-          <th>Price</th>
-          <th>Quantity</th>
-          <th>Timestamp</th>
-          <th>Order Type</th>
-        </tr>
-      </thead>
-      <tbody id="portfolioLog">
-      </tbody>
+      <tbody id="equityTable"></tbody>
     </table>
   </div>
 
   <script>
-    function logTransaction(equity, bank, price, qty, orderType) {
-      const logTable = document.getElementById("portfolioLog");
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${equity}</td>
-        <td>${bank}</td>
-        <td>₹${price}</td>
-        <td>${qty}</td>
-        <td>${new Date().toLocaleString()}</td>
-        <td>${orderType}</td>
-      `;
-      logTable.appendChild(row);
+    const SCRIPT_URL = "YOUR_DEPLOYED_APPS_SCRIPT_URL"; // Replace after deployment
+
+    // Load equities for selected bank
+    async function loadEquities() {
+      const bank = document.getElementById("bankSelect").value;
+      if (!bank) return;
+
+      document.getElementById("equitySection").style.display = "block";
+      document.getElementById("bankTitle").innerText = bank + " Equities";
+      const table = document.getElementById("equityTable");
+      table.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
+
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=getEquities&bank=${encodeURIComponent(bank)}`);
+        const equities = await res.json();
+
+        table.innerHTML = "";
+        equities.forEach(eq => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${eq["Equity Name"]}</td>
+            <td>₹${eq["Price"]}</td>
+            <td><input type="number" min="1" value="1" id="qty_${eq["Equity Name"].replace(/\s/g,'_')}"></td>
+            <td id="status_${eq["Equity Name"].replace(/\s/g,'_')}">${eq["Status"] || "-"}</td>
+            <td>
+              <button class="buy-btn" onclick="tradeEquity('${eq["Equity Name"]}','${bank}',${eq["Price"]},'buy')">Buy</button>
+              <button class="sell-btn" onclick="tradeEquity('${eq["Equity Name"]}','${bank}',${eq["Price"]},'sell')">Sell</button>
+            </td>
+          `;
+          table.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error(err);
+        table.innerHTML = "<tr><td colspan='5'>Error loading equities</td></tr>";
+      }
     }
 
-    function buyEquity(equity, bank, price, qtyId, statusId) {
-      const qty = document.getElementById(qtyId).value;
-      if (qty <= 0) return alert("Enter valid quantity!");
-      alert(`Equity "${equity}" purchased`);
-      document.getElementById(statusId).innerText = "Pending";
-      logTransaction(equity, bank, price, qty, "Buy");
-    }
+    // Trade Equity (Buy/Sell)
+    async function tradeEquity(equity, bank, price, type) {
+      const qtyInputId = `qty_${equity.replace(/\s/g,'_')}`;
+      const statusId = `status_${equity.replace(/\s/g,'_')}`;
+      const qty = document.getElementById(qtyInputId).value;
 
-    function sellEquity(equity, bank, price, qtyId, statusId) {
-      const qty = document.getElementById(qtyId).value;
       if (qty <= 0) return alert("Enter valid quantity!");
-      alert(`Equity "${equity}" sold`);
-      document.getElementById(statusId).innerText = "Pending";
-      logTransaction(equity, bank, price, qty, "Sell");
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "tradeEquity",
+            equity: equity,
+            bank: bank,
+            price: price,
+            quantity: qty,
+            tradeType: type.charAt(0).toUpperCase() + type.slice(1) // Buy / Sell
+          })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          alert(`Equity "${equity}" ${type}ed successfully`);
+          document.getElementById(statusId).innerText = "Pending";
+        } else {
+          alert("Trade failed");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error while trading equity");
+      }
     }
   </script>
-
 </body>
 </html>
