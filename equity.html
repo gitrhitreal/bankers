@@ -18,26 +18,17 @@
     }
     .buy-btn { background: #28a745; color: #fff; }
     .sell-btn { background: #dc3545; color: #fff; }
+    .logout {
+      display: block; margin: 20px auto; padding: 10px 20px;
+      background: #ff6a6a; color: white; border-radius: 8px; border: none; cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h1>Equity Management</h1>
-
-  <!-- Bank Dropdown -->
-  <div style="text-align:center; margin-bottom:20px;">
-    <label for="bankSelect"><b>Select Bank:</b></label>
-    <select id="bankSelect" onchange="loadEquities()">
-      <option value="">-- Choose Bank --</option>
-      <option value="Axis Bank">Axis Bank</option>
-      <option value="HDFC">HDFC</option>
-      <option value="ICICI">ICICI</option>
-      <!-- Add more banks here -->
-    </select>
-  </div>
+  <h1 id="bankTitle"></h1>
 
   <!-- Equities Table -->
-  <div class="bank-section" id="equitySection" style="display:none;">
-    <h2 id="bankTitle"></h2>
+  <div class="bank-section">
     <table>
       <thead>
         <tr>
@@ -52,34 +43,44 @@
     </table>
   </div>
 
+  <button class="logout" onclick="logout()">Logout</button>
+
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // Replace after deployment
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9I9f5gYRiXXrhz6UhsFqf4-dw-uyAPoV68fjIZf3sieXrDD8wipiaT4oImjCLoBolIQ/exec"; // Replace with your Web App URL
+    const bankName = localStorage.getItem("bankName");
 
-    // Load equities for selected bank
+    if (!bankName) {
+      window.location.href = "index.html"; // redirect if not logged in
+    }
+
+    document.getElementById("bankTitle").innerText = bankName + " - Equities";
+
+    // Load equities for logged-in bank
     async function loadEquities() {
-      const bank = document.getElementById("bankSelect").value;
-      if (!bank) return;
-
-      document.getElementById("equitySection").style.display = "block";
-      document.getElementById("bankTitle").innerText = bank + " Equities";
       const table = document.getElementById("equityTable");
       table.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
 
       try {
-        const res = await fetch(`${SCRIPT_URL}?action=getEquities&bank=${encodeURIComponent(bank)}`);
+        const res = await fetch(`${SCRIPT_URL}?action=getEquities&bank=${encodeURIComponent(bankName)}`);
         const equities = await res.json();
 
         table.innerHTML = "";
+        if (equities.length === 0) {
+          table.innerHTML = "<tr><td colspan='5'>No equities available</td></tr>";
+          return;
+        }
+
         equities.forEach(eq => {
           const row = document.createElement("tr");
+          const safeId = eq["Equity Name"].replace(/\s/g,'_');
           row.innerHTML = `
             <td>${eq["Equity Name"]}</td>
             <td>₹${eq["Price"]}</td>
-            <td><input type="number" min="1" value="1" id="qty_${eq["Equity Name"].replace(/\s/g,'_')}"></td>
-            <td id="status_${eq["Equity Name"].replace(/\s/g,'_')}">${eq["Status"] || "-"}</td>
+            <td><input type="number" min="1" value="1" id="qty_${safeId}"></td>
+            <td id="status_${safeId}">${eq["Status"] || "-"}</td>
             <td>
-              <button class="buy-btn" onclick="tradeEquity('${eq["Equity Name"]}','${bank}',${eq["Price"]},'buy')">Buy</button>
-              <button class="sell-btn" onclick="tradeEquity('${eq["Equity Name"]}','${bank}',${eq["Price"]},'sell')">Sell</button>
+              <button class="buy-btn" onclick="tradeEquity('${eq["Equity Name"]}', ${eq["Price"]}, 'Buy')">Buy</button>
+              <button class="sell-btn" onclick="tradeEquity('${eq["Equity Name"]}', ${eq["Price"]}, 'Sell')">Sell</button>
             </td>
           `;
           table.appendChild(row);
@@ -92,10 +93,10 @@
     }
 
     // Trade Equity (Buy/Sell)
-    async function tradeEquity(equity, bank, price, type) {
-      const qtyInputId = `qty_${equity.replace(/\s/g,'_')}`;
-      const statusId = `status_${equity.replace(/\s/g,'_')}`;
-      const qty = document.getElementById(qtyInputId).value;
+    async function tradeEquity(equity, price, type) {
+      const safeId = equity.replace(/\s/g,'_');
+      const qty = document.getElementById(`qty_${safeId}`).value;
+      const statusId = `status_${safeId}`;
 
       if (qty <= 0) return alert("Enter valid quantity!");
 
@@ -106,17 +107,17 @@
           body: JSON.stringify({
             action: "tradeEquity",
             equity: equity,
-            bank: bank,
+            bank: bankName,
             price: price,
             quantity: qty,
-            tradeType: type.charAt(0).toUpperCase() + type.slice(1) // Buy / Sell
+            tradeType: type
           })
         });
 
         const result = await res.json();
         if (result.success) {
           alert(`Equity "${equity}" ${type}ed successfully`);
-          document.getElementById(statusId).innerText = "Pending";
+          document.getElementById(statusId).innerText = "Pending " + type;
         } else {
           alert("Trade failed");
         }
@@ -125,6 +126,14 @@
         alert("Error while trading equity");
       }
     }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+
+    // Load on page start
+    loadEquities();
   </script>
 </body>
 </html>
