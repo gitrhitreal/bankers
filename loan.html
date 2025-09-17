@@ -95,14 +95,17 @@
               card.className = "loan-card";
               card.innerHTML = `
               <div class="loan-title">${loan["Loan Name"]}</div>
-              <div class="loan-details">Amount: ${loan.Amount}</div>
-              <div class="loan-details">Duration: ${loan.Duration}</div>
-              <div class="loan-details">Interest: ${loan.Interest}</div>
-              <div class="loan-details">Loan Type: ${loan["Loan Type"]}</div>
-              <div class="loan-details">Credit Score: ${loan["Credit Score"]}</div>
-               <div class="loan-details">Collateral: ${loan.Collateral}</div>
+<div class="loan-details">Amount: ${loan.Amount}</div>
+<div class="loan-details">Duration: ${loan.Duration}</div>
+<div class="loan-details">Interest: ${loan.Interest}</div>
+<div class="loan-details">Loan Type: ${loan["Loan Type"]}</div>
+<div class="loan-details">Credit Score: ${loan["Credit Score"]}</div>
+<div class="loan-details">Collateral: ${loan.Collateral}</div>
+
+<div style="margin-top:15px; display:flex; justify-content:center; gap:10px;">
   <button class="approve-btn">Approve</button>
-`;
+  <button class="approve-btn view-btn">View Details</button>
+</div>
 
               card.querySelector(".approve-btn").onclick = () => approveLoan(loan["Loan Name"], loan.Bank);
               loanList.appendChild(card);
@@ -129,6 +132,7 @@
   </script>
 </body>
 </html>
+
 
 
 
