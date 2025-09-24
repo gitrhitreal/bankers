@@ -55,33 +55,19 @@
       margin: 6px 0;
       color: #555;
     }
-    .btn-row {
+    .approve-btn {
       margin-top: 15px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-    .approve-btn, .pdf-btn {
       padding: 10px 15px;
       border: none;
+      background: linear-gradient(135deg, #43e97b, #38f9d7);
+      color: white;
+      font-weight: bold;
       border-radius: 10px;
       cursor: pointer;
-      font-weight: bold;
-      color: white;
       transition: all 0.3s ease;
-    }
-    .approve-btn {
-      background: linear-gradient(135deg, #43e97b, #38f9d7);
     }
     .approve-btn:hover {
       background: linear-gradient(135deg, #38f9d7, #43e97b);
-      transform: scale(1.05);
-    }
-    .pdf-btn {
-      background: linear-gradient(135deg, #ff9966, #ff5e62);
-    }
-    .pdf-btn:hover {
-      background: linear-gradient(135deg, #ff5e62, #ff9966);
       transform: scale(1.05);
     }
   </style>
@@ -112,12 +98,9 @@
                 <div class="bond-details">Price: ${bond["Current Price"]}</div>
                 <div class="bond-details">Yield: ${bond.Yield}</div>
                 <div class="bond-details">Maturity: ${bond.Maturity}</div>
-                <div class="btn-row">
-                  <button class="approve-btn">Purchase</button>
-                  ${bond["PDF Link"] ? `<button class="pdf-btn" onclick="window.open('${bond["PDF Link"]}', '_blank')">View Details</button>` : ""}
-                </div>
+                <div class="bond-details">Sector: ${bond.Sector || "N/A"}</div>
+                <button class="approve-btn">Purchase</button>
               `;
-
               card.querySelector(".approve-btn").onclick = () => approveBond(bond["Bond Name"], bond.Bank);
               bondList.appendChild(card);
             });
@@ -135,7 +118,12 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "approveBond", id: userId, bank: bank, bond: bondName })
+        body: JSON.stringify({
+          action: "approveBond",
+          id: userId,
+          bank: bank,
+          bond: bondName
+        })
       });
       alert(`Bond "${bondName}" purchased!`);
       window.location.href = "dashboard.html";
